@@ -11,6 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AnisRouteImport } from './routes/anis'
+import { Route as MedicalRouteImport } from './routes/medical'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SosRouteImport } from './routes/sos'
 import { Route as TransportIndexRouteImport } from './routes/transport.index'
 import { Route as TransportRouteIdRouteImport } from './routes/transport.$routeId'
 import { Route as TransportCalculatorRouteImport } from './routes/transport.calculator'
@@ -24,6 +28,26 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnisRoute = AnisRouteImport.update({
+  id: '/anis',
+  path: '/anis',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MedicalRoute = MedicalRouteImport.update({
+  id: '/medical',
+  path: '/medical',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SosRoute = SosRouteImport.update({
+  id: '/sos',
+  path: '/sos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TransportIndexRoute = TransportIndexRouteImport.update({
@@ -50,6 +74,10 @@ const TransportSuggestRoute = TransportSuggestRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/anis': typeof AnisRoute
+  '/medical': typeof MedicalRoute
+  '/settings': typeof SettingsRoute
+  '/sos': typeof SosRoute
   '/transport/$routeId': typeof TransportRouteIdRoute
   '/transport/calculator': typeof TransportCalculatorRoute
   '/transport/suggest': typeof TransportSuggestRoute
@@ -58,6 +86,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/anis': typeof AnisRoute
+  '/medical': typeof MedicalRoute
+  '/settings': typeof SettingsRoute
+  '/sos': typeof SosRoute
   '/transport/$routeId': typeof TransportRouteIdRoute
   '/transport/calculator': typeof TransportCalculatorRoute
   '/transport/suggest': typeof TransportSuggestRoute
@@ -67,6 +99,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/anis': typeof AnisRoute
+  '/medical': typeof MedicalRoute
+  '/settings': typeof SettingsRoute
+  '/sos': typeof SosRoute
   '/transport/$routeId': typeof TransportRouteIdRoute
   '/transport/calculator': typeof TransportCalculatorRoute
   '/transport/suggest': typeof TransportSuggestRoute
@@ -77,6 +113,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/anis'
+    | '/medical'
+    | '/settings'
+    | '/sos'
     | '/transport/$routeId'
     | '/transport/calculator'
     | '/transport/suggest'
@@ -85,6 +125,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/anis'
+    | '/medical'
+    | '/settings'
+    | '/sos'
     | '/transport/$routeId'
     | '/transport/calculator'
     | '/transport/suggest'
@@ -93,6 +137,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/anis'
+    | '/medical'
+    | '/settings'
+    | '/sos'
     | '/transport/$routeId'
     | '/transport/calculator'
     | '/transport/suggest'
@@ -102,6 +150,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AnisRoute: typeof AnisRoute
+  MedicalRoute: typeof MedicalRoute
+  SettingsRoute: typeof SettingsRoute
+  SosRoute: typeof SosRoute
   TransportRouteIdRoute: typeof TransportRouteIdRoute
   TransportCalculatorRoute: typeof TransportCalculatorRoute
   TransportSuggestRoute: typeof TransportSuggestRoute
@@ -122,6 +174,34 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/anis': {
+      id: '/anis'
+      path: '/anis'
+      fullPath: '/anis'
+      preLoaderRoute: typeof AnisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/medical': {
+      id: '/medical'
+      path: '/medical'
+      fullPath: '/medical'
+      preLoaderRoute: typeof MedicalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sos': {
+      id: '/sos'
+      path: '/sos'
+      fullPath: '/sos'
+      preLoaderRoute: typeof SosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/transport/': {
@@ -158,6 +238,10 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AnisRoute: AnisRoute,
+  MedicalRoute: MedicalRoute,
+  SettingsRoute: SettingsRoute,
+  SosRoute: SosRoute,
   TransportRouteIdRoute: TransportRouteIdRoute,
   TransportCalculatorRoute: TransportCalculatorRoute,
   TransportSuggestRoute: TransportSuggestRoute,
