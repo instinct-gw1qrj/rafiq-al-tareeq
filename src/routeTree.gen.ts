@@ -10,33 +10,102 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as TransportIndexRouteImport } from './routes/transport.index'
+import { Route as TransportRouteIdRouteImport } from './routes/transport.$routeId'
+import { Route as TransportCalculatorRouteImport } from './routes/transport.calculator'
+import { Route as TransportSuggestRouteImport } from './routes/transport.suggest'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TransportIndexRoute = TransportIndexRouteImport.update({
+  id: '/transport/',
+  path: '/transport/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TransportRouteIdRoute = TransportRouteIdRouteImport.update({
+  id: '/transport/$routeId',
+  path: '/transport/$routeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TransportCalculatorRoute = TransportCalculatorRouteImport.update({
+  id: '/transport/calculator',
+  path: '/transport/calculator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TransportSuggestRoute = TransportSuggestRouteImport.update({
+  id: '/transport/suggest',
+  path: '/transport/suggest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/transport/$routeId': typeof TransportRouteIdRoute
+  '/transport/calculator': typeof TransportCalculatorRoute
+  '/transport/suggest': typeof TransportSuggestRoute
+  '/transport/': typeof TransportIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/transport/$routeId': typeof TransportRouteIdRoute
+  '/transport/calculator': typeof TransportCalculatorRoute
+  '/transport/suggest': typeof TransportSuggestRoute
+  '/transport': typeof TransportIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/transport/$routeId': typeof TransportRouteIdRoute
+  '/transport/calculator': typeof TransportCalculatorRoute
+  '/transport/suggest': typeof TransportSuggestRoute
+  '/transport/': typeof TransportIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/transport/$routeId'
+    | '/transport/calculator'
+    | '/transport/suggest'
+    | '/transport/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin'
+    | '/transport/$routeId'
+    | '/transport/calculator'
+    | '/transport/suggest'
+    | '/transport'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/transport/$routeId'
+    | '/transport/calculator'
+    | '/transport/suggest'
+    | '/transport/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  TransportRouteIdRoute: typeof TransportRouteIdRoute
+  TransportCalculatorRoute: typeof TransportCalculatorRoute
+  TransportSuggestRoute: typeof TransportSuggestRoute
+  TransportIndexRoute: typeof TransportIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +117,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transport/': {
+      id: '/transport/'
+      path: '/transport'
+      fullPath: '/transport/'
+      preLoaderRoute: typeof TransportIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transport/$routeId': {
+      id: '/transport/$routeId'
+      path: '/transport/$routeId'
+      fullPath: '/transport/$routeId'
+      preLoaderRoute: typeof TransportRouteIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transport/calculator': {
+      id: '/transport/calculator'
+      path: '/transport/calculator'
+      fullPath: '/transport/calculator'
+      preLoaderRoute: typeof TransportCalculatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transport/suggest': {
+      id: '/transport/suggest'
+      path: '/transport/suggest'
+      fullPath: '/transport/suggest'
+      preLoaderRoute: typeof TransportSuggestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  TransportRouteIdRoute: TransportRouteIdRoute,
+  TransportCalculatorRoute: TransportCalculatorRoute,
+  TransportSuggestRoute: TransportSuggestRoute,
+  TransportIndexRoute: TransportIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

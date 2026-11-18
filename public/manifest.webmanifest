@@ -1,0 +1,18 @@
+{
+  "name": "رفيق الطريق",
+  "short_name": "رفيق الطريق",
+  "description": "دليل المواصلات والأجرة، أذكار وطمأنينة، إسعافات أولية وزر استغاثة — يعمل بدون إنترنت.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6efe0",
+  "theme_color": "#266863",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
