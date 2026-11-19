@@ -5,7 +5,7 @@ const MODEL = "openai/gpt-6-astra";
 
 /** Streams a Responses call through the Lovable AI Gateway and returns the final text. Server-only. */
 export async function askGateway(system: string, messages: { role: "user" | "assistant"; content: string }[]) {
-  const apiKey = process.env.LOVABLE_API_KEY;
+  const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new Error("خدمة المساعد غير مُفعّلة حالياً");
   let runId: string | undefined;
   const provider = createOpenAI({

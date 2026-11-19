@@ -29,14 +29,14 @@ function notify(title: string, body: string) {
 
 function TripPage() {
   const [s] = useSettings();
-  const [destName, setDestName] = useState(PLACES[0].name);
+  const [destName, setDestName] = useState(PLACES[0]!.name);
   const [custom, setCustom] = useState<Place | null>(null);
   const [watching, setWatching] = useState(false);
   const [km, setKm] = useState<number | null>(null);
   const [nearby, setNearby] = useState<string[]>([]);
   const watchId = useRef<number | null>(null);
   const fired = useRef<Set<string>>(new Set());
-  const dest = custom ?? PLACES.find((p) => p.name === destName)!;
+  const dest = custom ?? PLACES.find((p) => p.name === destName) ?? PLACES[0]!;
 
   const stop = () => {
     if (watchId.current != null) navigator.geolocation.clearWatch(watchId.current);
@@ -45,7 +45,7 @@ function TripPage() {
   useEffect(() => stop, []);
 
   const start = async () => {
-    if (!navigator.geolocation) return toast.error("الجهاز لا يدعم تحديد الموقع");
+    if (!navigator.geolocation) { toast.error("الجهاز لا يدعم تحديد الموقع"); return; }
     if ("Notification" in window && Notification.permission === "default") await Notification.requestPermission().catch(() => {});
     fired.current = new Set();
     setWatching(true);
@@ -70,13 +70,13 @@ function TripPage() {
 
   const saveHere = async () => {
     const c = await getCurrentCoords();
-    if (!c) return toast.error("تعذّر تحديد الموقع");
+    if (!c) { toast.error("تعذّر تحديد الموقع"); return; }
     setCustom({ name: "مكان حفظته", lat: c.lat, lng: c.lng, kind: "landmark" });
     toast.success("تم حفظ موقعك الحالي كوجهة");
   };
 
   const arrived = async (via: "sms" | "wa") => {
-    if (!s.emergencyNumber) return toast.error("سجّل رقم الطوارئ من الإعدادات");
+    if (!s.emergencyNumber) { toast.error("سجّل رقم الطوارئ من الإعدادات"); return; }
     const c = await getCurrentCoords(8000);
     const body = `الحمد لله ${s.userName ? `(${s.userName}) ` : ""}وصلت ${dest?.name ?? "وجهتي"} بالسلامة 🤍${c ? `\nموقعي: ${mapsLink(c)}` : ""}\n— رفيق الطريق`;
     window.location.href = via === "sms" ? smsLink(s.emergencyNumber, body) : whatsappLink(s.emergencyNumber, body);

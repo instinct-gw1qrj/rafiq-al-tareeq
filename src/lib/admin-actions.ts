@@ -13,7 +13,7 @@ export function applyAdminActions(routes: TransportRoute[], actions: AdminAction
         {
           ...a.route,
           id: `r-${uid()}`,
-          stages: a.route.stages.map((s) => ({ ...s, id: uid(), note: s.note ?? undefined })),
+          stages: a.route.stages.map(({ note, ...s }) => (note ? { ...s, id: uid(), note } : { ...s, id: uid() })),
           updatedAt: stamp,
           source: "official",
         },
