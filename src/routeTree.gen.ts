@@ -15,6 +15,7 @@ import { Route as AnisRouteImport } from './routes/anis'
 import { Route as MedicalRouteImport } from './routes/medical'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SosRouteImport } from './routes/sos'
+import { Route as TripRouteImport } from './routes/trip'
 import { Route as TransportIndexRouteImport } from './routes/transport.index'
 import { Route as TransportRouteIdRouteImport } from './routes/transport.$routeId'
 import { Route as TransportCalculatorRouteImport } from './routes/transport.calculator'
@@ -50,6 +51,11 @@ const SosRoute = SosRouteImport.update({
   path: '/sos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TripRoute = TripRouteImport.update({
+  id: '/trip',
+  path: '/trip',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TransportIndexRoute = TransportIndexRouteImport.update({
   id: '/transport/',
   path: '/transport/',
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/medical': typeof MedicalRoute
   '/settings': typeof SettingsRoute
   '/sos': typeof SosRoute
+  '/trip': typeof TripRoute
   '/transport/$routeId': typeof TransportRouteIdRoute
   '/transport/calculator': typeof TransportCalculatorRoute
   '/transport/suggest': typeof TransportSuggestRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/medical': typeof MedicalRoute
   '/settings': typeof SettingsRoute
   '/sos': typeof SosRoute
+  '/trip': typeof TripRoute
   '/transport/$routeId': typeof TransportRouteIdRoute
   '/transport/calculator': typeof TransportCalculatorRoute
   '/transport/suggest': typeof TransportSuggestRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/medical': typeof MedicalRoute
   '/settings': typeof SettingsRoute
   '/sos': typeof SosRoute
+  '/trip': typeof TripRoute
   '/transport/$routeId': typeof TransportRouteIdRoute
   '/transport/calculator': typeof TransportCalculatorRoute
   '/transport/suggest': typeof TransportSuggestRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/medical'
     | '/settings'
     | '/sos'
+    | '/trip'
     | '/transport/$routeId'
     | '/transport/calculator'
     | '/transport/suggest'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/medical'
     | '/settings'
     | '/sos'
+    | '/trip'
     | '/transport/$routeId'
     | '/transport/calculator'
     | '/transport/suggest'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/medical'
     | '/settings'
     | '/sos'
+    | '/trip'
     | '/transport/$routeId'
     | '/transport/calculator'
     | '/transport/suggest'
@@ -154,6 +166,7 @@ export interface RootRouteChildren {
   MedicalRoute: typeof MedicalRoute
   SettingsRoute: typeof SettingsRoute
   SosRoute: typeof SosRoute
+  TripRoute: typeof TripRoute
   TransportRouteIdRoute: typeof TransportRouteIdRoute
   TransportCalculatorRoute: typeof TransportCalculatorRoute
   TransportSuggestRoute: typeof TransportSuggestRoute
@@ -204,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/trip': {
+      id: '/trip'
+      path: '/trip'
+      fullPath: '/trip'
+      preLoaderRoute: typeof TripRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/transport/': {
       id: '/transport/'
       path: '/transport'
@@ -242,6 +262,7 @@ const rootRouteChildren: RootRouteChildren = {
   MedicalRoute: MedicalRoute,
   SettingsRoute: SettingsRoute,
   SosRoute: SosRoute,
+  TripRoute: TripRoute,
   TransportRouteIdRoute: TransportRouteIdRoute,
   TransportCalculatorRoute: TransportCalculatorRoute,
   TransportSuggestRoute: TransportSuggestRoute,

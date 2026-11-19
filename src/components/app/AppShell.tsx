@@ -5,6 +5,7 @@ import { registerOfflineSupport } from "@/lib/pwa-register";
 import { AppHeader } from "./AppHeader";
 import { BottomNav } from "./BottomNav";
 import { Splash } from "./Splash";
+import { Onboarding, ThemeSync } from "./Onboarding";
 
 export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
@@ -14,7 +15,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
+      <ThemeSync />
       <Splash />
+      <Onboarding />
       <AppHeader />
       <main className="mx-auto max-w-md px-4 pb-32 pt-5">{children}</main>
       <BottomNav />

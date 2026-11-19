@@ -9,6 +9,11 @@ export interface Settings {
   notifications: boolean;
   lastNotified: string;
   adminPassword: string;
+  phone: string;
+  emergencyRelation: string;
+  governorate: string;
+  registered: boolean;
+  theme: "light" | "dark";
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -18,6 +23,11 @@ export const DEFAULT_SETTINGS: Settings = {
   notifications: false,
   lastNotified: "",
   adminPassword: DEFAULT_ADMIN_PASSWORD,
+  phone: "",
+  emergencyRelation: "",
+  governorate: "",
+  registered: false,
+  theme: "light",
 };
 
 export const SETTINGS_KEY = "rafiq.settings.v1";
