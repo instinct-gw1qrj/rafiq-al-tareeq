@@ -41,7 +41,7 @@ export function ShareApp() {
       <h2 className="text-lg font-bold text-foreground">شارك التطبيق مع أصحابك</h2>
       <p className="mt-1 text-sm text-muted-foreground">خلّي اللي جنبك يصوّر الكود بكاميرا موبايله</p>
       <div
-        className="mx-auto mt-3 w-44 rounded-xl bg-background p-2"
+        className="mx-auto mt-3 w-44 overflow-hidden rounded-xl bg-background p-2 [&_svg]:block [&_svg]:h-auto [&_svg]:w-full"
         aria-label="رمز QR لرابط التطبيق"
         dangerouslySetInnerHTML={{ __html: svg }}
       />
