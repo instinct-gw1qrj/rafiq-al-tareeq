@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { BusFront, Calculator, ChevronLeft, HeartPulse, MoonStar, Siren } from "lucide-react";
 import { DailyCard } from "@/components/app/DailyCard";
 import { Checklist, FavoritesSection, TripCard } from "@/components/app/HomeExtras";
+import { ShareApp } from "@/components/app/ShareApp";
 import { Signature } from "@/components/app/Signature";
 import { pageHead } from "@/lib/seo";
 import { TONE, type Tone } from "@/lib/tones";
@@ -73,6 +74,7 @@ function Home() {
       </Link>
 
       <Checklist />
+      <ShareApp />
       <DailyCard />
     </div>
   );
