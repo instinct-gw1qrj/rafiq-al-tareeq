@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BusFront, Calculator, ChevronLeft, HeartPulse, MoonStar, Siren } from "lucide-react";
 import { DailyCard } from "@/components/app/DailyCard";
+import { Checklist, FavoritesSection, TripCard } from "@/components/app/HomeExtras";
 import { Signature } from "@/components/app/Signature";
 import { pageHead } from "@/lib/seo";
 import { TONE, type Tone } from "@/lib/tones";
@@ -37,6 +38,9 @@ function Home() {
         />
       </section>
 
+      <FavoritesSection />
+      <TripCard />
+
       <section className="grid grid-cols-2 gap-3">
         {SECTIONS.map((s, i) => (
           <Link
@@ -68,6 +72,7 @@ function Home() {
         <ChevronLeft className="size-5 text-muted-foreground" />
       </Link>
 
+      <Checklist />
       <DailyCard />
     </div>
   );

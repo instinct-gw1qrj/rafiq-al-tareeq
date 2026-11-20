@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Calculator, Info, MapPin, MessageSquarePlus, PencilLine, Share2, Users } from "lucide-react";
 import { toast } from "sonner";
+import { FavoriteButton } from "@/components/app/FavoriteButton";
 import { VehicleIcon } from "@/components/app/VehicleIcon";
 import { Button } from "@/components/ui/button";
 import { formatFare, toArabicDigits } from "@/lib/arabic";
@@ -94,9 +95,12 @@ function RouteDetail() {
             </span>
           )}
         </div>
-        <h1 className="text-2xl font-bold">
-          {route.from} ← {route.to}
-        </h1>
+        <div className="flex items-start justify-between gap-2">
+          <h1 className="text-2xl font-bold">
+            {route.from} ← {route.to}
+          </h1>
+          <FavoriteButton id={route.id} />
+        </div>
         <p className="mt-2 flex items-start gap-1.5 text-sm text-primary-foreground/85">
           <MapPin className="mt-0.5 size-4 shrink-0" /> مكان الموقف: {route.station}
         </p>

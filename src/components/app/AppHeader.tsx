@@ -1,9 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { Settings, WifiOff } from "lucide-react";
+import { Moon, Settings, Sun, WifiOff } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useSettings } from "@/lib/settings";
 
 export function AppHeader() {
   const [offline, setOffline] = useState(false);
+  const [s, update] = useSettings();
+  const dark = s.theme === "dark";
   useEffect(() => {
     const update = () => setOffline(!navigator.onLine);
     update();
@@ -28,6 +31,14 @@ export function AppHeader() {
               <WifiOff className="size-3.5" /> بدون إنترنت
             </span>
           )}
+          <button
+            type="button"
+            onClick={() => update({ theme: dark ? "light" : "dark" })}
+            aria-label={dark ? "الوضع النهاري" : "الوضع الليلي"}
+            className="flex size-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+          >
+            {dark ? <Sun className="size-5" /> : <Moon className="size-5" />}
+          </button>
           <Link
             to="/settings"
             aria-label="الإعدادات"
