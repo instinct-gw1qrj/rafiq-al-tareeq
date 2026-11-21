@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { BusFront, Calculator, ChevronLeft, HeartPulse, MoonStar, Siren } from "lucide-react";
 import { DailyCard } from "@/components/app/DailyCard";
 import { Checklist, FavoritesSection, TripCard } from "@/components/app/HomeExtras";
+import { HomeLinks } from "@/components/app/HomeLinks";
 import { ShareApp } from "@/components/app/ShareApp";
 import { Signature } from "@/components/app/Signature";
 import { pageHead } from "@/lib/seo";
@@ -41,6 +42,7 @@ function Home() {
 
       <FavoritesSection />
       <TripCard />
+      <HomeLinks />
 
       <section className="grid grid-cols-2 gap-3">
         {SECTIONS.map((s, i) => (

@@ -44,4 +44,24 @@ export async function registerOfflineSupport() {
   }
   const { registerSW } = await import("virtual:pwa-register");
   registerSW({ immediate: true });
+  void warmOfflinePages();
+}
+
+// Every main screen, saved on first online visit so the installed app opens all of them without internet.
+const OFFLINE_PAGES = ["/", "/transport", "/transport/calculator", "/transport/suggest", "/trip", "/anis", "/medical", "/sos", "/settings", "/places", "/assistant", "/admin"];
+
+async function warmOfflinePages() {
+  if (!("caches" in window) || !navigator.onLine) return;
+  await navigator.serviceWorker.ready;
+  const cache = await caches.open("rafiq-pages");
+  await Promise.all(
+    OFFLINE_PAGES.map(async (path) => {
+      try {
+        const res = await fetch(path, { credentials: "same-origin" });
+        if (res.ok) await cache.put(new URL(path, window.location.origin).href, res);
+      } catch {
+        /* offline: keep the old copy */
+      }
+    }),
+  );
 }

@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AnisRouteImport } from './routes/anis'
+import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as MedicalRouteImport } from './routes/medical'
+import { Route as PlacesRouteImport } from './routes/places'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SosRouteImport } from './routes/sos'
 import { Route as TripRouteImport } from './routes/trip'
@@ -36,9 +38,19 @@ const AnisRoute = AnisRouteImport.update({
   path: '/anis',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssistantRoute = AssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MedicalRoute = MedicalRouteImport.update({
   id: '/medical',
   path: '/medical',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlacesRoute = PlacesRouteImport.update({
+  id: '/places',
+  path: '/places',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -81,7 +93,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/anis': typeof AnisRoute
+  '/assistant': typeof AssistantRoute
   '/medical': typeof MedicalRoute
+  '/places': typeof PlacesRoute
   '/settings': typeof SettingsRoute
   '/sos': typeof SosRoute
   '/trip': typeof TripRoute
@@ -94,7 +108,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/anis': typeof AnisRoute
+  '/assistant': typeof AssistantRoute
   '/medical': typeof MedicalRoute
+  '/places': typeof PlacesRoute
   '/settings': typeof SettingsRoute
   '/sos': typeof SosRoute
   '/trip': typeof TripRoute
@@ -108,7 +124,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/anis': typeof AnisRoute
+  '/assistant': typeof AssistantRoute
   '/medical': typeof MedicalRoute
+  '/places': typeof PlacesRoute
   '/settings': typeof SettingsRoute
   '/sos': typeof SosRoute
   '/trip': typeof TripRoute
@@ -123,7 +141,9 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/anis'
+    | '/assistant'
     | '/medical'
+    | '/places'
     | '/settings'
     | '/sos'
     | '/trip'
@@ -136,7 +156,9 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/anis'
+    | '/assistant'
     | '/medical'
+    | '/places'
     | '/settings'
     | '/sos'
     | '/trip'
@@ -149,7 +171,9 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/anis'
+    | '/assistant'
     | '/medical'
+    | '/places'
     | '/settings'
     | '/sos'
     | '/trip'
@@ -163,7 +187,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AnisRoute: typeof AnisRoute
+  AssistantRoute: typeof AssistantRoute
   MedicalRoute: typeof MedicalRoute
+  PlacesRoute: typeof PlacesRoute
   SettingsRoute: typeof SettingsRoute
   SosRoute: typeof SosRoute
   TripRoute: typeof TripRoute
@@ -196,11 +222,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnisRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assistant': {
+      id: '/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/medical': {
       id: '/medical'
       path: '/medical'
       fullPath: '/medical'
       preLoaderRoute: typeof MedicalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/places': {
+      id: '/places'
+      path: '/places'
+      fullPath: '/places'
+      preLoaderRoute: typeof PlacesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -259,7 +299,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AnisRoute: AnisRoute,
+  AssistantRoute: AssistantRoute,
   MedicalRoute: MedicalRoute,
+  PlacesRoute: PlacesRoute,
   SettingsRoute: SettingsRoute,
   SosRoute: SosRoute,
   TripRoute: TripRoute,

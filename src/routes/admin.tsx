@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, KeyRound, Lock, LogOut, ShieldCheck, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { AdminAI, AdsManager, PlacesManager, StatsPanel } from "@/components/app/AdminTools";
 import { Chip } from "@/components/app/Chip";
 import { Field } from "@/components/app/Field";
 import { PageHeader } from "@/components/app/PageHeader";
@@ -100,7 +101,7 @@ function AdminPage() {
 }
 
 function AdminPanel({ onLock }: { onLock: () => void }) {
-  const [tab, setTab] = useState<"pending" | "routes" | "history" | "security">("pending");
+  const [tab, setTab] = useState<"ai" | "pending" | "routes" | "places" | "ads" | "stats" | "history" | "security">("pending");
   const [routes, setRoutes] = useRoutes();
   const [suggestions, setSuggestions] = useSuggestions();
   const pending = suggestions.filter((s) => s.status === "pending");
@@ -127,10 +128,14 @@ function AdminPanel({ onLock }: { onLock: () => void }) {
       />
 
       <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
+        <Chip active={tab === "ai"} onClick={() => setTab("ai")}>المساعد الذكي ✨</Chip>
         <Chip active={tab === "pending"} onClick={() => setTab("pending")}>
           بانتظار المراجعة ({toArabicDigits(pending.length)})
         </Chip>
         <Chip active={tab === "routes"} onClick={() => setTab("routes")}>الخطوط والأسعار</Chip>
+        <Chip active={tab === "places"} onClick={() => setTab("places")}>الأماكن الموصى بها</Chip>
+        <Chip active={tab === "ads"} onClick={() => setTab("ads")}>الإعلانات</Chip>
+        <Chip active={tab === "stats"} onClick={() => setTab("stats")}>عداد الزوار</Chip>
         <Chip active={tab === "history"} onClick={() => setTab("history")}>السجل</Chip>
         <Chip active={tab === "security"} onClick={() => setTab("security")}>كلمة المرور</Chip>
       </div>
@@ -207,6 +212,10 @@ function AdminPanel({ onLock }: { onLock: () => void }) {
         ))}
 
       {tab === "security" && <PasswordChanger />}
+      {tab === "ai" && <AdminAI />}
+      {tab === "places" && <PlacesManager />}
+      {tab === "ads" && <AdsManager />}
+      {tab === "stats" && <StatsPanel />}
     </div>
   );
 }

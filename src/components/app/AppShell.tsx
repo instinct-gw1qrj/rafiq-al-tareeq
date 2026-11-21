@@ -1,7 +1,10 @@
+import { useRouterState } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { maybeShowDailyNotification } from "@/lib/daily";
 import { registerOfflineSupport } from "@/lib/pwa-register";
+import { pullContent, recordVisit } from "@/lib/cloud-sync";
+import { recordOpen, recordSection } from "@/lib/stats";
 import { AppHeader } from "./AppHeader";
 import { BottomNav } from "./BottomNav";
 import { Splash } from "./Splash";
@@ -11,7 +14,19 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     void registerOfflineSupport();
     void maybeShowDailyNotification();
+    void pullContent().catch(() => {});
+    try {
+      if (!sessionStorage.getItem("rafiq.opened")) {
+        sessionStorage.setItem("rafiq.opened", "1");
+        recordOpen();
+        void recordVisit().catch(() => {});
+      }
+    } catch {
+      /* ignore */
+    }
   }, []);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => recordSection(pathname), [pathname]);
 
   return (
     <div className="min-h-screen bg-background">

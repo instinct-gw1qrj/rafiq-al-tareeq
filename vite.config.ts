@@ -38,6 +38,13 @@ export default defineConfig({
                 cacheName: "rafiq-pages",
                 networkTimeoutSeconds: 4,
                 expiration: { maxEntries: 60 },
+                // A page never opened before still loads offline: serve the saved home screen and let the app route.
+                plugins: [
+                  {
+                    handlerDidError: async () =>
+                      (await caches.match("/", { cacheName: "rafiq-pages", ignoreSearch: true })) ?? Response.error(),
+                  },
+                ],
               },
             },
             {
