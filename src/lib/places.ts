@@ -24,7 +24,7 @@ export interface RecPlace {
   active: boolean;
   createdAt: string;
 }
-export type NewPlace = Omit<RecPlace, "id" | "createdAt" | "active"> & { active?: boolean };
+export type NewPlace = Omit<RecPlace, "id" | "createdAt" | "active"> & { active?: boolean | undefined };
 
 export const PLACES_KEY = "rafiq.places.v1";
 export const SEED_PLACES: RecPlace[] = [

@@ -34,7 +34,10 @@ export function AdminAI() {
 
   const submit = async () => {
     if (!cmd.trim()) return;
-    if (!navigator.onLine) return toast.error("المساعد الذكي محتاج إنترنت. باقي لوحة التحكم شغالة بدون نت.");
+    if (!navigator.onLine) {
+      toast.error("المساعد الذكي محتاج إنترنت. باقي لوحة التحكم شغالة بدون نت.");
+      return;
+    }
     setBusy(true);
     setResult(null);
     try {
@@ -110,7 +113,10 @@ export function PlacesManager() {
         className="space-y-3 rounded-3xl border border-border bg-card p-5 shadow-soft"
         onSubmit={(e) => {
           e.preventDefault();
-          if (!f.name.trim()) return toast.error("اكتبي اسم المكان");
+          if (!f.name.trim()) {
+            toast.error("اكتبي اسم المكان");
+            return;
+          }
           setPlaces((prev) => [makePlace({ ...f, name: f.name.trim() }), ...prev]);
           setF(EMPTY_FORM);
           toast.success("تمت إضافة المكان");

@@ -20,7 +20,10 @@ function useOwner() {
     return () => data.subscription.unsubscribe();
   }, []);
   useEffect(() => {
-    if (!session) return setIsAdmin(false);
+    if (!session) {
+      setIsAdmin(false);
+      return;
+    }
     void supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" }).then(({ data }) => setIsAdmin(data === true));
   }, [session]);
   return { session, isAdmin };
@@ -86,7 +89,10 @@ export function OwnerCloud() {
             className="w-full"
             disabled={busy}
             onClick={async () => {
-              if (!navigator.onLine) return toast.error("النشر محتاج إنترنت");
+              if (!navigator.onLine) {
+                toast.error("النشر محتاج إنترنت");
+                return;
+              }
               setBusy(true);
               try {
                 await publishAll();
