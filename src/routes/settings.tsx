@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, ChevronLeft, Phone, Settings as SettingsIcon, ShieldCheck } from "lucide-react";
+import { BatteryCharging, Bell, ChevronLeft, Phone, Settings as SettingsIcon, ShieldCheck, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import { Field } from "@/components/app/Field";
 import { PageHeader } from "@/components/app/PageHeader";
 import { Signature } from "@/components/app/Signature";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { testAlarm } from "@/lib/alarm";
 import { pageHead } from "@/lib/seo";
 import { useSettings } from "@/lib/settings";
 
@@ -47,6 +49,23 @@ function SettingsPage() {
           <p className="text-xs text-muted-foreground">آية ودعاء قصير مرة كل يوم عند فتح التطبيق</p>
         </div>
         <Switch checked={s.notifications} onCheckedChange={(v) => void toggleNotifications(v)} aria-label="الإشعارات اليومية" />
+      </section>
+      <section className="space-y-3 rounded-3xl border border-border bg-card p-5 shadow-soft">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="flex items-center gap-2 font-bold"><BatteryCharging className="size-5 text-success" /> وضع توفير البطارية</h2>
+            <p className="text-xs text-muted-foreground">خلفية داكنة مريحة للشاشة — الرحلة تكمل وقت أطول</p>
+          </div>
+          <Switch checked={s.batterySaver} onCheckedChange={(v) => update({ batterySaver: v })} aria-label="وضع توفير البطارية" />
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold">تنبيه البطارية المنخفضة</p>
+            <p className="text-xs text-muted-foreground">ينبهك لما البطارية توصل ٢٠٪ وأنت في المتابعة</p>
+          </div>
+          <Switch checked={s.batteryWarn} onCheckedChange={(v) => update({ batteryWarn: v })} aria-label="تنبيه البطارية المنخفضة" />
+        </div>
+        <Button variant="outline" className="w-full" onClick={testAlarm}><Volume2 /> جرّب نغمة المنبه القوية</Button>
       </section>
       <Link to="/admin" className="flex items-center gap-3 rounded-3xl border border-border bg-card p-5 shadow-soft">
         <ShieldCheck className="size-6 text-gold" />

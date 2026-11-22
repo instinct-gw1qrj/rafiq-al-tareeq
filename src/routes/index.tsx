@@ -3,9 +3,11 @@ import { BusFront, Calculator, ChevronLeft, HeartPulse, MoonStar, Siren } from "
 import { DailyCard } from "@/components/app/DailyCard";
 import { Checklist, FavoritesSection, TripCard } from "@/components/app/HomeExtras";
 import { HomeLinks } from "@/components/app/HomeLinks";
+import { AdSlot } from "@/components/app/AdSlot";
 import { ShareApp } from "@/components/app/ShareApp";
 import { Signature } from "@/components/app/Signature";
 import { pageHead } from "@/lib/seo";
+import { useSettings } from "@/lib/settings";
 import { TONE, type Tone } from "@/lib/tones";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +28,7 @@ const SECTIONS: { to: string; title: string; desc: string; icon: typeof BusFront
 ];
 
 function Home() {
+  const [s] = useSettings();
   return (
     <div className="space-y-6">
       <section className="bg-hero animate-rise relative overflow-hidden rounded-3xl p-6 text-primary-foreground shadow-soft">
@@ -77,6 +80,7 @@ function Home() {
 
       <Checklist />
       <ShareApp />
+      <AdSlot area={s.governorate} />
       <DailyCard />
     </div>
   );

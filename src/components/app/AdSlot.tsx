@@ -1,11 +1,18 @@
 import { useEffect, useRef } from "react";
-import { useAds } from "@/lib/ads";
+import { Phone } from "lucide-react";
+import { pickSponsor, useAds } from "@/lib/ads";
+import { usePlaces } from "@/lib/places";
 
 declare global { interface Window { adsbygoogle?: unknown[] } }
 
-/** Owner-controlled ad space: renders nothing unless ads are switched on in the admin panel. */
-export function AdSlot() {
+/**
+ * Owner-controlled ad space: renders nothing unless ads are switched on in the admin panel.
+ * With AdSense configured it shows Google ads; otherwise the sponsored place that fits
+ * this reader — destination first, then governorate, then any sponsored place (works offline).
+ */
+export function AdSlot({ dest = "", area = "" }: { dest?: string; area?: string }) {
   const [ads] = useAds();
+  const [places] = usePlaces();
   const pushed = useRef(false);
   const useAdsense = ads.enabled && /^ca-pub-\d+$/.test(ads.adsenseClient.trim());
   useEffect(() => {
@@ -27,11 +34,23 @@ export function AdSlot() {
         <ins className="adsbygoogle block" style={{ display: "block" }} data-ad-client={ads.adsenseClient.trim()} data-ad-slot={ads.adsenseSlot} data-ad-format="auto" data-full-width-responsive="true" />
       </div>
     );
-  if (!ads.sponsorText) return null;
+  const ad = pickSponsor(ads, places, dest, area);
+  if (!ad) return null;
+  const tel = ad.link.startsWith("tel:");
   return (
-    <a href={ads.sponsorLink || undefined} target="_blank" rel="noopener noreferrer sponsored" className="block rounded-2xl border border-gold/40 bg-gold-soft p-3 text-sm">
+    <a
+      href={ad.link || undefined}
+      {...(tel || !ad.link ? {} : { target: "_blank" })}
+      rel="noopener noreferrer sponsored"
+      className="block rounded-2xl border border-gold/40 bg-gold-soft p-3 text-sm"
+    >
       <span className="ml-2 rounded bg-gold px-1.5 py-0.5 text-[10px] font-bold text-foreground">برعاية</span>
-      {ads.sponsorText}
+      {ad.text}
+      {ad.phone && (
+        <span className="mt-1.5 flex items-center gap-1 text-xs font-bold text-accent-foreground" dir="ltr">
+          <Phone className="size-3" /> {ad.phone}
+        </span>
+      )}
     </a>
   );
 }

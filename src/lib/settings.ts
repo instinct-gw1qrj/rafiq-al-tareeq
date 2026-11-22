@@ -14,6 +14,8 @@ export interface Settings {
   governorate: string;
   registered: boolean;
   theme: "light" | "dark";
+  batterySaver: boolean;
+  batteryWarn: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -28,6 +30,8 @@ export const DEFAULT_SETTINGS: Settings = {
   governorate: "",
   registered: false,
   theme: "light",
+  batterySaver: false,
+  batteryWarn: true,
 };
 
 export const SETTINGS_KEY = "rafiq.settings.v1";

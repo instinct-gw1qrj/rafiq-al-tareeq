@@ -173,6 +173,14 @@ export function AdsManager() {
       <Field label="رقم الوحدة الإعلانية (Slot)"><Input dir="ltr" value={ads.adsenseSlot} onChange={(e) => setAds({ adsenseSlot: e.target.value })} className="h-11" /></Field>
       <Field label="نص راعي محلي (لو مفيش كود جوجل)"><Input value={ads.sponsorText} onChange={(e) => setAds({ sponsorText: e.target.value })} className="h-11" /></Field>
       <Field label="رابط الراعي"><Input dir="ltr" value={ads.sponsorLink} onChange={(e) => setAds({ sponsorLink: e.target.value })} className="h-11" /></Field>
+      <label className="flex items-center justify-between gap-3 text-sm font-medium">
+        الإعلان يتبع وجهة الرحلة (رايح بنها → إعلان طريق الزراعي)
+        <Switch checked={ads.targetByDestination} onCheckedChange={(v) => setAds({ targetByDestination: v })} />
+      </label>
+      <label className="flex items-center justify-between gap-3 text-sm font-medium">
+        الإعلان يتبع محافظة المستخدم
+        <Switch checked={ads.targetByGovernorate} onCheckedChange={(v) => setAds({ targetByGovernorate: v })} />
+      </label>
     </div>
   );
 }

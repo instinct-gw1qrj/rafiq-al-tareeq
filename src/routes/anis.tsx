@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Chip } from "@/components/app/Chip";
 import { DailyCard } from "@/components/app/DailyCard";
 import { PageHeader } from "@/components/app/PageHeader";
+import { PrayerTimesCard } from "@/components/app/PrayerTimesCard";
+import { QiblaCompass } from "@/components/app/QiblaCompass";
 import { Button } from "@/components/ui/button";
 import { ADHKAR } from "@/data/adhkar";
 import { DHIKR_OPTIONS, STORIES, VERSES, WISDOMS } from "@/data/anis";
@@ -18,7 +20,7 @@ export const Route = createFileRoute("/anis")({
   component: AnisPage,
 });
 
-type Tab = "adhkar" | "tasbeeh" | "quran" | "stories";
+type Tab = "adhkar" | "prayer" | "tasbeeh" | "quran" | "stories";
 
 function AnisPage() {
   const [tab, setTab] = useState<Tab>("adhkar");
@@ -27,11 +29,18 @@ function AnisPage() {
       <PageHeader title="أنيس الطريق" subtitle="طمأنينة في كل مشوار" icon={MoonStar} tone="anis" />
       <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
         <Chip active={tab === "adhkar"} onClick={() => setTab("adhkar")}>الأذكار</Chip>
+        <Chip active={tab === "prayer"} onClick={() => setTab("prayer")}>صلاة وقبلة</Chip>
         <Chip active={tab === "tasbeeh"} onClick={() => setTab("tasbeeh")}>المسبحة</Chip>
         <Chip active={tab === "quran"} onClick={() => setTab("quran")}>آيات</Chip>
         <Chip active={tab === "stories"} onClick={() => setTab("stories")}>قصص</Chip>
       </div>
       {tab === "adhkar" && <Adhkar />}
+      {tab === "prayer" && (
+        <div className="space-y-4">
+          <PrayerTimesCard />
+          <QiblaCompass />
+        </div>
+      )}
       {tab === "tasbeeh" && <Tasbeeh />}
       {tab === "quran" && (
         <div className="space-y-3">

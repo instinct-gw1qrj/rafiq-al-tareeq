@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Bot, Store } from "lucide-react";
+import { Bot, Store, TrainFront } from "lucide-react";
 import { PlaceCard } from "@/components/app/PlaceCard";
 import { filterPlaces, usePlaces } from "@/lib/places";
 
@@ -16,6 +16,10 @@ export function HomeLinks() {
         <Link to="/places" className="flex items-center gap-2 rounded-2xl border border-border bg-card p-3 shadow-soft">
           <span className="flex size-10 items-center justify-center rounded-xl bg-gold-soft text-accent-foreground"><Store className="size-5" /></span>
           <span className="text-sm font-bold">استراحات وأماكن</span>
+        </Link>
+        <Link to="/transit" className="col-span-2 flex items-center gap-2 rounded-2xl border border-border bg-card p-3 shadow-soft">
+          <span className="flex size-10 items-center justify-center rounded-xl bg-road-soft text-road"><TrainFront className="size-5" /></span>
+          <span className="text-sm font-bold">مترو وقطارات — الخطوط والمواعيد والأسعار</span>
         </Link>
       </div>
       {featured.length > 0 && (

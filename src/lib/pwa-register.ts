@@ -48,7 +48,7 @@ export async function registerOfflineSupport() {
 }
 
 // Every main screen, saved on first online visit so the installed app opens all of them without internet.
-const OFFLINE_PAGES = ["/", "/transport", "/transport/calculator", "/transport/suggest", "/trip", "/anis", "/medical", "/sos", "/settings", "/places", "/assistant", "/admin"];
+const OFFLINE_PAGES = ["/", "/transport", "/transport/calculator", "/transport/suggest", "/trip", "/anis", "/medical", "/sos", "/settings", "/places", "/assistant", "/admin", "/transit"];
 
 async function warmOfflinePages() {
   if (!("caches" in window) || !navigator.onLine) return;

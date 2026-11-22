@@ -1,0 +1,131 @@
+// Offline transit reference: Cairo Metro lines and the main Egyptian Railways routes.
+// Data checked against cairometro.gov.eg / cairo.gov.eg and November 2026 fare tables.
+
+export interface MetroLine {
+  id: string;
+  name: string;
+  endpoints: string;
+  stationsCount: number;
+  lengthKm: number;
+  swatch: string; // tailwind bg class for the line badge
+  stations: string[];
+  note?: string;
+}
+
+export const METRO_LINES: MetroLine[] = [
+  {
+    id: "l1",
+    name: "الخط الأول",
+    endpoints: "حلوان ↔ المرج الجديدة",
+    stationsCount: 35,
+    lengthKm: 44.3,
+    swatch: "bg-sos",
+    stations: [
+      "حلوان", "عين حلوان", "جامعة حلوان", "وادي حوف", "حدائق حلوان", "المعصرة", "طرة الأسمنت",
+      "كوتسيكا", "طرة البلد", "ثكنات المعادي", "المعادي", "حدائق المعادي", "دار السلام", "الزهراء",
+      "مار جرجس", "الملك الصالح", "السيدة زينب", "سعد زغلول", "أنور السادات (التحرير)",
+      "جمال عبد الناصر", "أحمد عرابي", "الشهداء (رمسيس)", "غمرة", "الدمرداش", "منشية الصدر",
+      "كوبري القبة", "حمامات القبة", "سراي القبة", "حدائق الزيتون", "حلمية الزيتون", "المطرية",
+      "عين شمس", "عزبة النخل", "المرج", "المرج الجديدة",
+    ],
+    note: "التبديل: أنور السادات والشهداء ↔ الخط الثاني، وناصر ↔ الخط الثالث.",
+  },
+  {
+    id: "l2",
+    name: "الخط الثاني",
+    endpoints: "شبرا الخيمة ↔ المنيب",
+    stationsCount: 20,
+    lengthKm: 21.6,
+    swatch: "bg-primary",
+    stations: [
+      "شبرا الخيمة", "كلية الزراعة", "المظلات", "الخلفاوي", "سانت تريزا", "روض الفرج", "مسرة",
+      "الشهداء", "العتبة", "محمد نجيب", "أنور السادات", "الأوبرا", "الدقي", "البحوث", "جامعة القاهرة",
+      "فيصل", "الجيزة", "أم المصريين", "ساقية مكي", "المنيب",
+    ],
+    note: "التبديل: الشهداء وأنور السادات ↔ الخط الأول، والعتبة وجامعة القاهرة ↔ الخط الثالث.",
+  },
+  {
+    id: "l3",
+    name: "الخط الثالث",
+    endpoints: "عدلي منصور ↔ روض الفرج (عبر العتبة وناصر)",
+    stationsCount: 34,
+    lengthKm: 41.2,
+    swatch: "bg-success",
+    stations: [
+      "عدلي منصور", "الهايكستب", "عمر بن الخطاب", "قباء", "هشام بركات", "النزهة", "نادي الشمس",
+      "ألف مسكن", "الأهرام", "كلية البنات", "الاستاد", "أرض المعارض", "العباسية", "باب الشعرية",
+      "العتبة", "ناصر",
+    ],
+    note: "أطول خط في مصر — يمتد غرباً بعد ناصر حتى روض الفرج، وعدلي منصور فيه موقف اتكأ وكهرباء ومواعيد موحّدة.",
+  },
+];
+
+/** Ticket price by number of stations, applied on all three lines (since ٢٧ مارس ٢٠٢٦). */
+export const METRO_FARES: { range: string; price: string }[] = [
+  { range: "حتى ٩ محطات", price: "١٠ ج.م" },
+  { range: "من ١٠ إلى ١٦ محطة", price: "١٢ ج.م" },
+  { range: "من ١٧ إلى ٢٣ محطة", price: "١٥ ج.م" },
+  { range: "من ٢٤ إلى ٣٩ محطة", price: "٢٠ ج.م" },
+];
+
+export const METRO_HOURS = "أول قطار ٥:١٥ صباحاٌ — آخر قطار ١:٠٠ بعد منتصف الليل. آخر قطار من حلوان ١١:٤٠ م ومن المرج الجديدة ١١:٤٥ م.";
+
+export interface TrainRoute {
+  id: string;
+  name: string;
+  duration: string;
+  samples: { train: string; from: string; to: string }[];
+  fares: { cls: string; price: string }[];
+}
+
+export const TRAIN_ROUTES: TrainRoute[] = [
+  {
+    id: "alex",
+    name: "القاهرة ↔ الإسكندرية",
+    duration: "من ٢ ساعة و٣٠ دقيقة (تالجو) حتى ٣ ساعات و٥٠ دقيقة (ثالثة تهوية)",
+    samples: [
+      { train: "تالجو ٢٠٢٥", from: "٨:٠٠ ص", to: "١٠:٣٠ ص" },
+      { train: "VIP ٩٠١", from: "٨:١٠ ص", to: "١١:١٥ ص" },
+      { train: "ثالثة مكيفة ١١٣١", from: "٧:٠٠ ص", to: "٩:٥٥ ص" },
+    ],
+    fares: [
+      { cls: "ثالثة تهوية", price: "٦٥ ج.م" },
+      { cls: "ثالثة مكيفة", price: "٩٠ ج.م" },
+      { cls: "ثانية خاصة", price: "١٧٠ ج.م" },
+      { cls: "أولى خاصة", price: "٢٢٠ ج.م" },
+      { cls: "تالجو (ثانية/أولى)", price: "٣٠٠ / ٥٠٠ ج.م" },
+    ],
+  },
+  {
+    id: "assiout",
+    name: "القاهرة ↔ أسيوط",
+    duration: "حوالي ٤ ساعات و٤٥ دقيقة (تالجو) حتى ٦ ساعات",
+    samples: [
+      { train: "تالجو ٢٠٣٠", from: "٧:٠٠ م", to: "١١:٤٥ م" },
+      { train: "VIP ٩٨٠", from: "٨:٠٠ ص", to: "١:١٠ م" },
+    ],
+    fares: [
+      { cls: "VIP أولى", price: "٢٩٠ ج.م" },
+      { cls: "VIP ثانية", price: "٢١٠ ج.م" },
+    ],
+  },
+  {
+    id: "aswan",
+    name: "القاهرة ↔ أسوان",
+    duration: "قطار ليلي VIP ٩٩٦: ١٠:٠٠ م → ١١:٣٠ ص (نوم)",
+    samples: [
+      { train: "VIP ٩٩٦", from: "١٠:٠٠ م", to: "١١:٣٠ ص" },
+    ],
+    fares: [
+      { cls: "VIP أولى", price: "٤٩٠ ج.م" },
+      { cls: "VIP ثانية", price: "٣٢٠ ج.م" },
+      { cls: "تالجو أولى", price: "١٠٠٠ ج.م" },
+    ],
+  },
+];
+
+export const TRAIN_TIPS = [
+  "الحجز: تطبيق «سكك حديد مصر - Egyptian National Railways» أو من الشباك — المكيف والتالجو والنوم لازم تحجزها مسبقاٌ.",
+  "الأسعار والمواقيت هنا ل نوفمبر ٢٠٢٦ وممكن تتغير — تأكد قبل السفر، والتطبيق نفسه شغال بدون نت.",
+  "قطارات النوم والـ VIP والتالجو بتتحرك من محطة مصر (رمسيس) أو بشتيل حسب الجدول.",
+];

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BellRing, Coins, HeartHandshake, MapPin, Navigation, Radar, Square } from "lucide-react";
+import { BellRing, Coins, HeartHandshake, MapPin, Navigation, Radar, Square, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AdSlot } from "@/components/app/AdSlot";
@@ -8,6 +8,8 @@ import { PageHeader } from "@/components/app/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { changeDue } from "@/lib/ads";
+import { playAlarm, testAlarm } from "@/lib/alarm";
+import { batteryWarning } from "@/lib/battery";
 import { formatFare, toArabicDigits } from "@/lib/arabic";
 import { alertStage, distanceKm, PLACES, type Place } from "@/lib/geo";
 import { pageHead } from "@/lib/seo";
@@ -19,8 +21,9 @@ export const Route = createFileRoute("/trip")({
   component: TripPage,
 });
 
-function notify(title: string, body: string) {
+function notify(title: string, body: string, loud = false) {
   toast(title, { description: body, duration: 8000 });
+  if (loud) playAlarm();
   if ("vibrate" in navigator) navigator.vibrate?.([300, 150, 300]);
   if ("Notification" in window && Notification.permission === "granted") {
     try { new Notification(title, { body, icon: "/icons/icon-192.png" }); } catch { /* ignore */ }
@@ -47,6 +50,10 @@ function TripPage() {
   const start = async () => {
     if (!navigator.geolocation) { toast.error("الجهاز لا يدعم تحديد الموقع"); return; }
     if ("Notification" in window && Notification.permission === "default") await Notification.requestPermission().catch(() => {});
+    if (s.batteryWarn) {
+      const w = await batteryWarning();
+      if (w) toast.warning(w, { duration: 9000 });
+    }
     fired.current = new Set();
     setWatching(true);
     watchId.current = navigator.geolocation.watchPosition(
@@ -57,7 +64,7 @@ function TripPage() {
         const stage = alertStage(d);
         if (stage !== "far" && !fired.current.has(stage)) {
           fired.current.add(stage);
-          notify(stage === "near" ? "قربت توصل 🚏" : "وصلت وجهتك ✅", stage === "near" ? `باقي حوالي ${toArabicDigits(d.toFixed(1))} كم على ${dest.name}، استعد للنزول` : `أنت الآن عند ${dest.name}`);
+          notify(stage === "near" ? "قربت توصل 🚏" : "وصلت وجهتك ✅", stage === "near" ? `باقي حوالي ${toArabicDigits(d.toFixed(1))} كم على ${dest.name}، استعد للنزول` : `أنت الآن عند ${dest.name}`, true);
         }
         const close = PLACES.filter((p) => p.name !== dest.name && distanceKm(here, p) < 5).map((p) => p.name);
         setNearby(close);
@@ -100,6 +107,7 @@ function TripPage() {
           </select>
         </Field>
         <Button variant="outline" size="sm" onClick={saveHere} disabled={watching}><MapPin /> احفظ مكاني الحالي كوجهة للرجوع</Button>
+        <Button variant="outline" size="sm" onClick={testAlarm}><Volume2 /> جرّب نغمة المنبه القوية</Button>
         {watching ? (
           <Button onClick={stop} variant="destructive" className="h-12 w-full"><Square /> إيقاف المتابعة</Button>
         ) : (
@@ -137,7 +145,7 @@ function TripPage() {
         <p className={rest >= 0 ? "rounded-2xl bg-primary-soft p-3 text-center font-bold text-primary" : "rounded-2xl bg-sos-soft p-3 text-center font-bold text-sos"}>
           {rest >= 0 ? `الباقي لك: ${formatFare(rest)}` : `ناقصك: ${formatFare(-rest)}`}
         </p>
-        <AdSlot />
+        <AdSlot dest={dest.name} area={s.governorate} />
       </section>
     </div>
   );

@@ -17,6 +17,7 @@ import { Route as MedicalRouteImport } from './routes/medical'
 import { Route as PlacesRouteImport } from './routes/places'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SosRouteImport } from './routes/sos'
+import { Route as TransitRouteImport } from './routes/transit'
 import { Route as TripRouteImport } from './routes/trip'
 import { Route as TransportIndexRouteImport } from './routes/transport.index'
 import { Route as TransportRouteIdRouteImport } from './routes/transport.$routeId'
@@ -63,6 +64,11 @@ const SosRoute = SosRouteImport.update({
   path: '/sos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TransitRoute = TransitRouteImport.update({
+  id: '/transit',
+  path: '/transit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TripRoute = TripRouteImport.update({
   id: '/trip',
   path: '/trip',
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/places': typeof PlacesRoute
   '/settings': typeof SettingsRoute
   '/sos': typeof SosRoute
+  '/transit': typeof TransitRoute
   '/trip': typeof TripRoute
   '/transport/$routeId': typeof TransportRouteIdRoute
   '/transport/calculator': typeof TransportCalculatorRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/places': typeof PlacesRoute
   '/settings': typeof SettingsRoute
   '/sos': typeof SosRoute
+  '/transit': typeof TransitRoute
   '/trip': typeof TripRoute
   '/transport/$routeId': typeof TransportRouteIdRoute
   '/transport/calculator': typeof TransportCalculatorRoute
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/places': typeof PlacesRoute
   '/settings': typeof SettingsRoute
   '/sos': typeof SosRoute
+  '/transit': typeof TransitRoute
   '/trip': typeof TripRoute
   '/transport/$routeId': typeof TransportRouteIdRoute
   '/transport/calculator': typeof TransportCalculatorRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/places'
     | '/settings'
     | '/sos'
+    | '/transit'
     | '/trip'
     | '/transport/$routeId'
     | '/transport/calculator'
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/places'
     | '/settings'
     | '/sos'
+    | '/transit'
     | '/trip'
     | '/transport/$routeId'
     | '/transport/calculator'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/places'
     | '/settings'
     | '/sos'
+    | '/transit'
     | '/trip'
     | '/transport/$routeId'
     | '/transport/calculator'
@@ -192,6 +204,7 @@ export interface RootRouteChildren {
   PlacesRoute: typeof PlacesRoute
   SettingsRoute: typeof SettingsRoute
   SosRoute: typeof SosRoute
+  TransitRoute: typeof TransitRoute
   TripRoute: typeof TripRoute
   TransportRouteIdRoute: typeof TransportRouteIdRoute
   TransportCalculatorRoute: typeof TransportCalculatorRoute
@@ -257,6 +270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/transit': {
+      id: '/transit'
+      path: '/transit'
+      fullPath: '/transit'
+      preLoaderRoute: typeof TransitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/trip': {
       id: '/trip'
       path: '/trip'
@@ -304,6 +324,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlacesRoute: PlacesRoute,
   SettingsRoute: SettingsRoute,
   SosRoute: SosRoute,
+  TransitRoute: TransitRoute,
   TripRoute: TripRoute,
   TransportRouteIdRoute: TransportRouteIdRoute,
   TransportCalculatorRoute: TransportCalculatorRoute,

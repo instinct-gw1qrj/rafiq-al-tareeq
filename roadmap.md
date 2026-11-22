@@ -1,10 +1,18 @@
 # Roadmap
-- [ ] Recommended places & rest stops page + home strip + admin manager
-- [ ] Owner AI assistant in admin (routes, places, ads) with confirm
-- [ ] Traveler chat "اسأل رفيق" with offline fallback
-- [ ] Offline: pre-cache all main pages after install
-- [ ] Visitor stats in admin
-- [ ] Lovable Cloud: owner edits (routes, places, ads) reach all users; cached offline
-- [ ] Real visitor counter via Cloud
-- [ ] Fog / highway safety tips
-- [ ] App rating (stars)
+- [x] Recommended places & rest stops page + home strip + admin manager
+- [x] Owner AI assistant in admin (routes, places, ads) with confirm
+- [x] Traveler chat "اسأل رفيق" with offline fallback
+- [x] Offline: pre-cache all main pages after install
+- [x] Visitor stats in admin
+- [x] Lovable Cloud: owner edits (routes, places, ads) reach all users; cached offline
+- [x] Real visitor counter via Cloud
+- [x] Fog / highway safety tips
+- [x] App rating (stars)
+- [x] Share app: Web Share button + offline QR code
+- [x] Prayer times (offline astronomy) + Qibla compass in Anis
+- [x] Metro & trains offline guide (/transit)
+- [x] Loud arrival alarm (Web Audio siren) + test button
+- [x] Battery saver mode + low-battery warning
+- [x] Smart ads: sponsored place by destination / governorate
+- [x] Publish current build to the official URL
+- [ ] Owner cloud account: confirm email shoroukelbaz39@gmail.com, then sign in and publish content
