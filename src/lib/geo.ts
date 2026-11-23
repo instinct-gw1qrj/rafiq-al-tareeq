@@ -8,6 +8,8 @@ export const PLACES: Place[] = [
   { name: "كفر الشيخ", lat: 31.1107, lng: 30.9388, kind: "gov" },
   { name: "المنصورة", lat: 31.0409, lng: 31.3785, kind: "gov" },
   { name: "الزقازيق", lat: 30.5877, lng: 31.502, kind: "gov" },
+  { name: "الزقازيق - كلية الزراعة", lat: 30.58571, lng: 31.52121, kind: "landmark" },
+  { name: "الزقازيق - موقف السرفيس الداخلي (المحطة)", lat: 30.58286, lng: 31.50188, kind: "landmark" },
   { name: "بنها", lat: 30.4659, lng: 31.1848, kind: "gov" },
   { name: "شبين الكوم", lat: 30.5503, lng: 31.0106, kind: "gov" },
   { name: "دمنهور", lat: 31.0341, lng: 30.4682, kind: "gov" },

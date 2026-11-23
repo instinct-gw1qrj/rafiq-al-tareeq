@@ -277,6 +277,54 @@ export const SEED_ROUTES: TransportRoute[] = [
   },
 ];
 
+// ---- Zagazig internal service (سرفيس الزقازيق) ----
+// Fare: official Sharqia tariff for service cars inside Zagazig city (governor's decision, 10 March 2026).
+// Line names and boarding points are rider-reported, so these routes are marked as community data.
+export const ZAGAZIG_SERVICE_FARE = 5;
+const ZAG_STAMP = "2026-11-23T08:00:00.000Z";
+const ZAG_FARE_NOTE = "الأجرة الرسمية للسرفيس داخل مدينة الزقازيق ٥ جنيه للراكب (تعريفة محافظة الشرقية – مارس ٢٠٢٦). لو السواق طلب أكتر أو قسّم الخط، ده مخالف.";
+const zag = (id: string, from: string, to: string, station: string, stageFrom: string, stageTo: string, line: string, extra: string[] = []): TransportRoute => ({
+  id,
+  scope: "internal",
+  from,
+  to,
+  station,
+  stages: [S(`${id}s1`, stageFrom, stageTo, "service", ZAGAZIG_SERVICE_FARE, station, `اركب سرفيس مكتوب عليه «${line}»`)],
+  notes: [ZAG_FARE_NOTE, ...extra, "خطوط السرفيس ونقط الركوب حسب كلام الركاب — اسأل السواق قبل ما تركب، ولو لقيت حاجة اتغيرت ابعت تعديل من «اقترح تعديل»."],
+  updatedAt: ZAG_STAMP,
+  source: "community",
+});
+
+export const ZAGAZIG_ROUTES: TransportRoute[] = [
+  zag("zag1", "جامعة الزقازيق", "كلية الزراعة – الزقازيق", "أمام بوابة جامعة الزقازيق الرئيسية", "بوابة الجامعة", "شارع طلبة عويضة (الفلل)", "الجامعة – طلبة", [
+    "انزل عند شارع طلبة عويضة واتمشى دقايق لميدان الزراعة، الكلية في شارع الوحدة الزراعية.",
+  ]),
+  zag("zag2", "كلية الزراعة – الزقازيق", "جامعة الزقازيق", "شارع طلبة عويضة جنب الفلل (قريب من كلية الزراعة)", "شارع طلبة عويضة", "بوابة الجامعة", "طلبة – الجامعة"),
+  zag("zag3", "كلية الزراعة – الزقازيق", "القومية – الزقازيق", "شارع طلبة عويضة جنب الفلل (قريب من كلية الزراعة)", "شارع طلبة عويضة", "شارع القومية", "طلبة – القومية"),
+  zag("zag4", "كلية الزراعة – الزقازيق", "محطة قطار الزقازيق", "شارع طلبة عويضة جنب الفلل (قريب من كلية الزراعة)", "شارع طلبة عويضة", "ميدان المحطة", "طلبة – المحطة", [
+    "المحطة قريبة من الكلية، وممكن تتمشاها لو مش شايل حاجة تقيلة.",
+  ]),
+  zag("zag5", "كلية الزراعة – الزقازيق", "الموقف الجديد – الزقازيق", "شارع طلبة عويضة جنب الفلل (قريب من كلية الزراعة)", "شارع طلبة عويضة", "الموقف الجديد (السفر للمحافظات)", "طلبة – الموقف"),
+  zag("zag6", "محطة قطار الزقازيق", "جامعة الزقازيق", "موقف السرفيس الداخلي جنب سور نادي السكة الحديد", "موقف السرفيس الداخلي", "بوابة الجامعة", "المحطة – الجامعة"),
+];
+
+SEED_ROUTES.push(...ZAGAZIG_ROUTES);
+
+/** Seed routes that existed before built-in additions were tracked; never re-added if the owner deleted them. */
+export const LEGACY_SEED_IDS = ["r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"];
+
+/** Adds built-in routes this device has never seen; routes the owner already removed stay removed. Pure. */
+export function mergeBuiltInRoutes(stored: TransportRoute[], builtIn: TransportRoute[], seen: string[]) {
+  const have = new Set(stored.map((r) => r.id));
+  const seenSet = new Set(seen);
+  const added = builtIn.filter((r) => !seenSet.has(r.id) && !have.has(r.id));
+  return {
+    routes: added.length ? [...stored, ...added] : stored,
+    seen: Array.from(new Set([...seen, ...builtIn.map((r) => r.id)])),
+    added: added.length,
+  };
+}
+
 export function describeSuggestion(s: Suggestion, routes: Pick<TransportRoute, "id" | "from" | "to">[]) {
   if (s.kind === "new_route") return `خط جديد: ${s.route.from} ← ${s.route.to}`;
   const r = routes.find((x) => x.id === s.routeId);

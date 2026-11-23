@@ -5,6 +5,7 @@ import { maybeShowDailyNotification } from "@/lib/daily";
 import { registerOfflineSupport } from "@/lib/pwa-register";
 import { pullContent, recordVisit } from "@/lib/cloud-sync";
 import { useSettings } from "@/lib/settings";
+import { syncBuiltInRoutes } from "@/lib/use-transport";
 import { recordOpen, recordSection } from "@/lib/stats";
 import { AppHeader } from "./AppHeader";
 import { BottomNav } from "./BottomNav";
@@ -16,7 +17,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     void registerOfflineSupport();
     void maybeShowDailyNotification();
-    void pullContent().catch(() => {});
+    void pullContent()
+      .catch(() => {})
+      .finally(syncBuiltInRoutes);
     try {
       if (!sessionStorage.getItem("rafiq.opened")) {
         sessionStorage.setItem("rafiq.opened", "1");
