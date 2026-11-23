@@ -29,6 +29,8 @@ export default defineConfig({
           navigateFallback: null,
           navigateFallbackDenylist: [/^\/~oauth/],
           cleanupOutdatedCaches: true,
+          // Build output lives under client/, but the site serves it from the root.
+          modifyURLPrefix: { "client/": "" },
           runtimeCaching: [
             {
               urlPattern: ({ request, url }) =>
