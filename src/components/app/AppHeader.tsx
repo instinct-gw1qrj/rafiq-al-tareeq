@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Moon, Settings, Sun, WifiOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSettings } from "@/lib/settings";
+import { OfflineReady } from "./OfflineReady";
 
 export function AppHeader() {
   const [offline, setOffline] = useState(false);
@@ -26,6 +27,7 @@ export function AppHeader() {
           <span className="font-display text-lg font-bold text-foreground">رفيق الطريق</span>
         </Link>
         <div className="flex items-center gap-2">
+          <OfflineReady />
           {offline && (
             <span className="inline-flex items-center gap-1 rounded-full bg-gold-soft px-2.5 py-1 text-xs font-medium text-accent-foreground">
               <WifiOff className="size-3.5" /> بدون إنترنت

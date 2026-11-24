@@ -57,7 +57,8 @@ export async function recordVisit() {
   if (!navigator.onLine) return;
   const rows = Array.from({ length: Math.min(pending, 50) }, () => ({ device_id: device }));
   const { error } = await supabase.from("app_visits").insert(rows);
-  if (!error) writeStore(PENDING_KEY, 0);
+  // Subtract only what was actually uploaded; a backlog above the 50-row batch stays pending.
+  if (!error) writeStore(PENDING_KEY, Math.max(0, pending - rows.length));
 }
 
 export async function fetchVisitorStats() {

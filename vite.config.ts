@@ -26,12 +26,25 @@ export default defineConfig({
         manifest: false,
         workbox: {
           globPatterns: ["**/*.{js,css,ico,png,svg,woff2,webmanifest}"],
+          // The default 2 MB cap could silently skip a big app chunk and break offline; cache everything we ship.
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
           navigateFallback: null,
           navigateFallbackDenylist: [/^\/~oauth/],
           cleanupOutdatedCaches: true,
           // Build output lives under client/, but the site serves it from the root.
           modifyURLPrefix: { "client/": "" },
           runtimeCaching: [
+            {
+              // Every script/style chunk the app loads, saved on first use. Keeps the app fully
+              // offline even for a chunk that somehow missed the precache manifest.
+              urlPattern: ({ url }) => url.origin === self.location.origin && /\/assets\/.+\.(?:js|css|woff2?)$/.test(url.pathname),
+              handler: "CacheFirst",
+              options: {
+                cacheName: "rafiq-assets",
+                expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
             {
               urlPattern: ({ request, url }) =>
                 request.mode === "navigate" && !url.pathname.startsWith("/~oauth"),

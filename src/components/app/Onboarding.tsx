@@ -15,7 +15,7 @@ export function Onboarding() {
   const [f, setF] = useState({ userName: "", phone: "", emergencyNumber: "", emergencyName: "", emergencyRelation: "", governorate: "" });
   const [err, setErr] = useState("");
   useEffect(() => setReady(true), []);
-  if (!ready || s.registered || s.emergencyNumber) return null;
+  if (!ready || s.registered || s.emergencyNumber || s.onboardingSkipped) return null;
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!f.userName.trim()) return setErr("اكتب اسمك");
@@ -48,7 +48,10 @@ export function Onboarding() {
           <Field label="صلة القرابة"><Input value={f.emergencyRelation} onChange={set("emergencyRelation")} className="h-11" placeholder="أخ / أم / زوج ..." /></Field>
           {err && <p className="text-sm font-medium text-destructive">{err}</p>}
           <Button type="submit" className="h-12 w-full text-base">ابدأ رحلتك</Button>
-          <p className="text-center text-xs text-muted-foreground">بياناتك محفوظة على جهازك فقط</p>
+          <Button type="button" variant="ghost" className="h-11 w-full text-sm" onClick={() => update({ onboardingSkipped: true })}>
+            تخطّي الآن واستكشف التطبيق
+          </Button>
+          <p className="text-center text-xs text-muted-foreground">بياناتك محفوظة على جهازك فقط، وتقدر تسجّلها في أي وقت من الإعدادات</p>
         </div>
       </form>
     </div>

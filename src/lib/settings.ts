@@ -13,6 +13,8 @@ export interface Settings {
   emergencyRelation: string;
   governorate: string;
   registered: boolean;
+  /** Visitor chose "تخطّي الآن" on the first screen; they can still register later from Settings. */
+  onboardingSkipped: boolean;
   theme: "light" | "dark";
   batterySaver: boolean;
   batteryWarn: boolean;
@@ -29,6 +31,7 @@ export const DEFAULT_SETTINGS: Settings = {
   emergencyRelation: "",
   governorate: "",
   registered: false,
+  onboardingSkipped: false,
   theme: "light",
   batterySaver: false,
   batteryWarn: true,

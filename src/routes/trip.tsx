@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { changeDue } from "@/lib/ads";
 import { playAlarm, testAlarm } from "@/lib/alarm";
 import { batteryWarning } from "@/lib/battery";
-import { formatFare, toArabicDigits } from "@/lib/arabic";
+import { formatFare, normalizeArabic, toArabicDigits } from "@/lib/arabic";
 import { alertStage, distanceKm, PLACES, type Place } from "@/lib/geo";
 import { pageHead } from "@/lib/seo";
 import { useSettings } from "@/lib/settings";
@@ -33,13 +33,26 @@ function notify(title: string, body: string, loud = false) {
 function TripPage() {
   const [s] = useSettings();
   const [destName, setDestName] = useState(PLACES[0]!.name);
+  const [customText, setCustomText] = useState("");
   const [custom, setCustom] = useState<Place | null>(null);
   const [watching, setWatching] = useState(false);
   const [km, setKm] = useState<number | null>(null);
   const [nearby, setNearby] = useState<string[]>([]);
   const watchId = useRef<number | null>(null);
   const fired = useRef<Set<string>>(new Set());
-  const dest = custom ?? PLACES.find((p) => p.name === destName) ?? PLACES[0]!;
+  // Free-text destination: matches a known place when possible (GPS alarm keeps working),
+  // otherwise keeps the typed name for the arrival message while the distance alarm stays off.
+  const typed = customText.trim();
+  const matchedPlace = typed
+    ? PLACES.find((p) => {
+        const a = normalizeArabic(p.name);
+        const b = normalizeArabic(typed);
+        return a.includes(b) || b.includes(a);
+      })
+    : undefined;
+  const typedDest: Place | null = typed ? (matchedPlace ?? { name: typed, lat: Number.NaN, lng: Number.NaN, kind: "landmark" }) : null;
+  const dest = custom ?? typedDest ?? PLACES.find((p) => p.name === destName) ?? PLACES[0]!;
+  const destHasCoords = Number.isFinite(dest.lat) && Number.isFinite(dest.lng);
 
   const stop = () => {
     if (watchId.current != null) navigator.geolocation.clearWatch(watchId.current);
@@ -54,17 +67,22 @@ function TripPage() {
       const w = await batteryWarning();
       if (w) toast.warning(w, { duration: 9000 });
     }
+    if (!destHasCoords) {
+      toast("«" + dest.name + "» مش على الخريطة عندنا، فالتنبيه بالمسافة مش هيعرف يقيسها. رادار المعالم ورسالة «وصلت بالسلامة» شغالين عادي، وتقدر تختار أقرب مكان معروف من القايمة لو عايز المنبه.", { duration: 9000 });
+    }
     fired.current = new Set();
     setWatching(true);
     watchId.current = navigator.geolocation.watchPosition(
       (pos) => {
         const here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        const d = distanceKm(here, dest);
-        setKm(d);
-        const stage = alertStage(d);
-        if (stage !== "far" && !fired.current.has(stage)) {
-          fired.current.add(stage);
-          notify(stage === "near" ? "قربت توصل 🚏" : "وصلت وجهتك ✅", stage === "near" ? `باقي حوالي ${toArabicDigits(d.toFixed(1))} كم على ${dest.name}، استعد للنزول` : `أنت الآن عند ${dest.name}`, true);
+        if (destHasCoords) {
+          const d = distanceKm(here, dest);
+          setKm(d);
+          const stage = alertStage(d);
+          if (stage !== "far" && !fired.current.has(stage)) {
+            fired.current.add(stage);
+            notify(stage === "near" ? "قربت توصل 🚏" : "وصلت وجهتك ✅", stage === "near" ? `باقي حوالي ${toArabicDigits(d.toFixed(1))} كم على ${dest.name}، استعد للنزول` : `أنت الآن عند ${dest.name}`, true);
+          }
         }
         const close = PLACES.filter((p) => p.name !== dest.name && distanceKm(here, p) < 5).map((p) => p.name);
         setNearby(close);
@@ -101,11 +119,27 @@ function TripPage() {
       <section className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-soft">
         <h2 className="flex items-center gap-2 font-bold"><BellRing className="size-5 text-road" /> منبه الوجهة</h2>
         <Field label="رايح فين؟">
-          <select value={custom ? "" : destName} onChange={(e) => { setCustom(null); setDestName(e.target.value); }} className={selectClass} disabled={watching}>
-            {custom && <option value="">{custom.name}</option>}
+          <select value={custom || typed ? "" : destName} onChange={(e) => { setCustom(null); setCustomText(""); setDestName(e.target.value); }} className={selectClass} disabled={watching}>
+            {(custom || typed) && <option value="">{dest.name}</option>}
             {PLACES.map((p) => <option key={p.name}>{p.name}</option>)}
           </select>
         </Field>
+        <Field label="أو اكتب وجهتك بنفسك">
+          <Input
+            value={customText}
+            onChange={(e) => { setCustom(null); setCustomText(e.target.value); }}
+            placeholder="مثلاً: ميدان الساعة، كفر الشيخ، شغلي…"
+            className="h-11"
+            disabled={watching}
+          />
+        </Field>
+        {typed && (
+          <p className="text-xs text-muted-foreground">
+            {matchedPlace
+              ? `هننبهك بالمسافة لأقرب نقطة معروفة: ${matchedPlace.name} ✅`
+              : "وجهة جديدة علينا: التنبيه بالمسافة مش متاح ليها، بس رادار المعالم ورسالة الاطمئنان شغالين."}
+          </p>
+        )}
         <Button variant="outline" size="sm" onClick={saveHere} disabled={watching}><MapPin /> احفظ مكاني الحالي كوجهة للرجوع</Button>
         <Button variant="outline" size="sm" onClick={testAlarm}><Volume2 /> جرّب نغمة المنبه القوية</Button>
         {watching ? (

@@ -1,5 +1,17 @@
 // The only place the offline service worker is registered. Never runs in dev or Lovable preview.
 const PREVIEW_LABEL = /^(?:id-preview|preview)(?:-[a-z0-9]+)?--.+$/;
+
+// When the last full offline warm-up finished; drives the "جاهز بدون نت" header badge.
+const READY_KEY = "rafiq.offline.ready.v1";
+export const OFFLINE_READY_EVENT = "rafiq:offline-ready";
+
+export function offlineReadyAt(): string | null {
+  try {
+    return typeof window === "undefined" ? null : window.localStorage.getItem(READY_KEY);
+  } catch {
+    return null;
+  }
+}
 const LOVABLE_HOSTS = [".lovable.app", ".gpt-eng.com", ".gptengineer.run"];
 const PROJECT_ID = "5547f57c-b322-4f9a-811d-4ba18190b222";
 
@@ -45,6 +57,16 @@ export async function registerOfflineSupport() {
   const { registerSW } = await import("virtual:pwa-register");
   registerSW({ immediate: true });
   void warmOfflinePages();
+  // A device that just got its connection back refreshes its saved copy right away.
+  window.addEventListener("online", () => void warmOfflinePages());
+}
+
+/** Re-saves every page and pulls the newest published content. Used by the header badge button. */
+export async function refreshOfflineData() {
+  if (typeof window === "undefined") return;
+  const { pullContent } = await import("./cloud-sync");
+  await pullContent().catch(() => {});
+  await warmOfflinePages();
 }
 
 // Every main screen, saved on first online visit so the installed app opens all of them without internet.
@@ -64,4 +86,14 @@ async function warmOfflinePages() {
       }
     }),
   );
+  // Declare the app offline-ready only when the home screen (the navigation fallback) is actually saved.
+  const home = await cache.match(new URL("/", window.location.origin).href, { ignoreSearch: true });
+  if (home) {
+    try {
+      window.localStorage.setItem(READY_KEY, new Date().toISOString());
+    } catch {
+      /* storage full or blocked: the badge just stays hidden */
+    }
+    window.dispatchEvent(new Event(OFFLINE_READY_EVENT));
+  }
 }

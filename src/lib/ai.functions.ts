@@ -1,6 +1,22 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+/** Verifies the caller's Supabase session and that the account has the admin role. */
+async function requireAdmin(token: string) {
+  const url = process.env["SUPABASE_URL"] ?? process.env["VITE_SUPABASE_URL"];
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
+  if (!url || !key) throw new Error("خدمة التحقق غير مهيأة");
+  const { createClient } = await import("@supabase/supabase-js");
+  const client = createClient(url, key, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data, error } = await client.auth.getUser(token);
+  if (error || !data.user) throw new Error("سجّلي دخولك الأول من لوحة التحكم");
+  const { data: isAdmin } = await client.rpc("has_role", { _user_id: data.user.id, _role: "admin" });
+  if (isAdmin !== true) throw new Error("الحساب ده مش أدمن");
+}
+
 const Msg = z.object({ role: z.enum(["user", "assistant"]), content: z.string().max(4000) });
 
 export const askTraveler = createServerFn({ method: "POST" })
@@ -42,8 +58,12 @@ export const ActionSchema = z.discriminatedUnion("type", [
 export type AdminAction = z.infer<typeof ActionSchema>;
 
 export const askAdmin = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ command: z.string().min(1).max(4000), routes: z.string().max(80000), places: z.string().max(30000) }))
+  .inputValidator(
+    z.object({ command: z.string().min(1).max(4000), routes: z.string().max(80000), places: z.string().max(30000), token: z.string().min(10).max(4096) }),
+  )
   .handler(async ({ data }) => {
+    // This assistant changes the app for every user, so it needs the owner's sign-in, not just the page password.
+    await requireAdmin(data.token);
     const { askGateway } = await import("./server/gateway");
     const system = `أنت مساعد إدارة تطبيق "رفيق الطريق" للمالكة د. شروق. حوّل أمرها إلى تعديلات على الخطوط والأماكن الموصى بها والإعلانات.
 أعد JSON فقط بدون أي نص آخر بالشكل: {"reply": "شرح قصير بالعربي لما ستفعله", "actions": [...]}

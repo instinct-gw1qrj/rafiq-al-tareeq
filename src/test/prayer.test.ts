@@ -33,4 +33,19 @@ describe("prayer times (offline astronomy)", () => {
     expect(late.label).toBe("الفجر");
     expect(late.mins).toBeGreaterThan(300);
   });
+
+  it("picks tomorrow's Fajr by calendar date, even on the DST spring-forward night", () => {
+    const prevTz = process.env.TZ;
+    process.env.TZ = "Africa/Cairo";
+    try {
+      const times = { fajr: "04:00", sunrise: "05:45", dhuhr: "12:10", asr: "15:40", maghrib: "18:50", isha: "20:20" };
+      // 23:30 on 2026-04-23: the clock jumps 00:00 → 01:00 at midnight, so +24h would land on the 25th.
+      const late = nextPrayer(times, new Date(2026, 3, 23, 23, 30));
+      expect(late.label).toBe("الفجر");
+      expect(late.at.getDate()).toBe(24);
+    } finally {
+      if (prevTz === undefined) delete process.env.TZ;
+      else process.env.TZ = prevTz;
+    }
+  });
 });

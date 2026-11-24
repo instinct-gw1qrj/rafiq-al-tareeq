@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mergeBuiltInRoutes, routeTotal, SEED_ROUTES, ZAGAZIG_ROUTES, ZAGAZIG_SERVICE_FARE } from "@/lib/transport";
+import { mergeBuiltInRoutes, routeTotal, searchRoutes, SEED_ROUTES, ZAGAZIG_ROUTES, ZAGAZIG_SERVICE_FARE } from "@/lib/transport";
 
 describe("Zagazig internal service lines", () => {
   it("charges the official 5 EGP Zagazig service fare on every line", () => {
@@ -10,6 +10,14 @@ describe("Zagazig internal service lines", () => {
   it("includes the university to Faculty of Agriculture line with a boarding point", () => {
     const r = SEED_ROUTES.find((x) => x.from === "جامعة الزقازيق" && x.to.includes("كلية الزراعة"));
     expect(r?.station).toBe("أمام بوابة جامعة الزقازيق الرئيسية");
+  });
+
+  it("is found by the quick search the way riders actually type", () => {
+    const find = (query: string) => searchRoutes(SEED_ROUTES, { query, scope: "all", vehicle: "all" });
+    expect(find("زراعة").some((r) => r.id === "zag1")).toBe(true);
+    expect(find("محطة").some((r) => r.id === "zag6")).toBe(true);
+    expect(find("القومية").some((r) => r.id === "zag3")).toBe(true);
+    expect(find("الجامعة").some((r) => r.id === "zag1" || r.id === "zag6")).toBe(true);
   });
 
   it("adds new built-in lines to a saved list without bringing back deleted old ones", () => {
