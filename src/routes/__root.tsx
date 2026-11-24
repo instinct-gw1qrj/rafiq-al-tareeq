@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { AppShell } from "../components/app/AppShell";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { CHUNK_RELOAD_KEY, shouldReloadForChunkError } from "../lib/resilience";
 
 function NotFoundComponent() {
   return (
@@ -41,6 +42,26 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
+  }, [error]);
+
+  // A lazy page chunk that failed to download (flaky connection) is fixed by one fresh
+  // load — do it automatically, guarded so it can never become a reload loop.
+  useEffect(() => {
+    let last: number | null = null;
+    try {
+      const raw = window.sessionStorage.getItem(CHUNK_RELOAD_KEY);
+      last = raw ? Number(raw) : null;
+    } catch {
+      last = null;
+    }
+    if (shouldReloadForChunkError(error, last, Date.now())) {
+      try {
+        window.sessionStorage.setItem(CHUNK_RELOAD_KEY, String(Date.now()));
+      } catch {
+        /* storage blocked: reload anyway, the cooldown is best-effort */
+      }
+      window.location.reload();
+    }
   }, [error]);
 
   return (

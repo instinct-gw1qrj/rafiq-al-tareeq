@@ -29,9 +29,16 @@ export function OfflineReady() {
       return;
     }
     setBusy(true);
-    await refreshOfflineData();
-    setBusy(false);
-    toast.success("النسخة المحفوظة اتحدثت ✅ التطبيق جاهز يشتغل من غير نت");
+    try {
+      const done = await refreshOfflineData();
+      if (done) {
+        toast.success("النسخة المحفوظة اتحدثت ✅ التطبيق جاهز يشتغل من غير نت");
+      } else {
+        toast.error("التجهيز ما كملش، جربي تاني لما النت يبقى أحسن 🔄");
+      }
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (

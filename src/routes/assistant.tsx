@@ -37,7 +37,11 @@ function AssistantPage() {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
-  useEffect(() => end.current?.scrollIntoView({ behavior: "smooth" }), [msgs, busy]);
+  // Braces matter: some browsers return a Promise from scrollIntoView, and an effect that
+  // returns a non-function crashes React's cleanup phase ("l is not a function").
+  useEffect(() => {
+    end.current?.scrollIntoView({ behavior: "smooth" });
+  }, [msgs, busy]);
 
   const send = async (q: string) => {
     const question = q.trim();
