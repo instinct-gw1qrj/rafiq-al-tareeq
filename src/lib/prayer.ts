@@ -138,7 +138,8 @@ export function nextPrayer(
     if (at.getTime() > now.getTime())
       return { id: p.id, label: p.label, at, mins: Math.max(0, Math.round((at.getTime() - now.getTime()) / 60000)) };
   }
-  const at = atToday(times.fajr, new Date(now.getTime() + 86400000));
+  // Tomorrow by calendar date, not +24h: on the DST spring-forward night +24h lands a day late.
+  const at = atToday(times.fajr, new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
   return { id: "fajr", label: "الفجر", at, mins: Math.round((at.getTime() - now.getTime()) / 60000) };
 }
 

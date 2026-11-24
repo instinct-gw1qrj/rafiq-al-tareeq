@@ -6,10 +6,11 @@ import { PageHeader } from "@/components/app/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { askTraveler } from "@/lib/ai.functions";
-import { normalizeArabic } from "@/lib/arabic";
+import { localAnswer, routeLine } from "@/lib/offline-brain";
 import { usePlaces, type RecPlace } from "@/lib/places";
 import { pageHead } from "@/lib/seo";
-import { VEHICLE_LABELS, type TransportRoute } from "@/lib/transport";
+import { useSettings } from "@/lib/settings";
+import type { TransportRoute } from "@/lib/transport";
 import { useRoutes } from "@/lib/use-transport";
 
 export const Route = createFileRoute("/assistant")({
@@ -20,31 +21,17 @@ export const Route = createFileRoute("/assistant")({
 type Msg = { role: "user" | "assistant"; content: string };
 const QUICK = ["إزاي أروح من موقف لموقف؟", "أرخص طريقة للمشوار ده؟", "دعاء السفر", "أعمل إيه في ضربة الشمس؟"];
 
-function routeLine(r: TransportRoute) {
-  return `${r.from} ← ${r.to} | الموقف: ${r.station} | ${r.stages
-    .map((s) => `${VEHICLE_LABELS[s.vehicle]} من ${s.from} إلى ${s.to} بـ ${s.fare} جنيه${s.note ? ` (${s.note})` : ""}`)
-    .join(" ثم ")}${r.notes.length ? ` | ملاحظات: ${r.notes.join("، ")}` : ""}`;
-}
 export function buildContext(routes: TransportRoute[], places: RecPlace[]) {
   const pl = places.filter((p) => p.active).map((p) => `${p.name} (${p.area} - ${p.road}): ${p.offer} ${p.phone}`);
   return `الخطوط:\n${routes.map(routeLine).join("\n")}\nأماكن موصى بها:\n${pl.join("\n")}`.slice(0, 59000);
 }
 
-/** Offline answer: matches question words against saved routes. */
-function offlineAnswer(q: string, routes: TransportRoute[]) {
-  const words = normalizeArabic(q).split(" ").filter((w) => w.length > 2);
-  const hits = routes
-    .map((r) => ({ r, score: words.filter((w) => normalizeArabic(`${r.from} ${r.to} ${r.station}`).includes(w)).length }))
-    .filter((x) => x.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
-  if (!hits.length) return "إنت دلوقتي من غير نت 📴 ومش لاقي خط مطابق في الدليل. جرّب تكتب اسم المكان بس، أو افتح «دليل الطريق».";
-  return `من غير نت، دي أقرب خطوط في الدليل:\n\n${hits.map((h, i) => `${i + 1}. ${routeLine(h.r)}`).join("\n\n")}`;
-}
+
 
 function AssistantPage() {
   const [routes] = useRoutes();
   const [places] = usePlaces();
+  const [s] = useSettings();
   const ask = useServerFn(askTraveler);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
@@ -59,7 +46,7 @@ function AssistantPage() {
     setMsgs(next);
     setText("");
     if (!navigator.onLine) {
-      setMsgs([...next, { role: "assistant", content: offlineAnswer(question, routes) }]);
+      setMsgs([...next, { role: "assistant", content: localAnswer(question, { routes, governorate: s.governorate }) }]);
       return;
     }
     setBusy(true);
@@ -67,7 +54,7 @@ function AssistantPage() {
       const r = await ask({ data: { messages: next.slice(-12), context: buildContext(routes, places) } });
       setMsgs([...next, { role: "assistant", content: r.ok ? r.text : `⚠️ ${r.text}` }]);
     } catch {
-      setMsgs([...next, { role: "assistant", content: offlineAnswer(question, routes) }]);
+      setMsgs([...next, { role: "assistant", content: localAnswer(question, { routes, governorate: s.governorate }) }]);
     } finally {
       setBusy(false);
     }

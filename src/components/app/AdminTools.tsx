@@ -13,6 +13,7 @@ import { adsSwitch, applyAdminActions, applyPlaceActions, describeAction } from 
 import { askAdmin, type AdminAction } from "@/lib/ai.functions";
 import { useAds } from "@/lib/ads";
 import { toArabicDigits } from "@/lib/arabic";
+import { supabase } from "@/integrations/supabase/client";
 import { makePlace, PLACE_KIND_LABELS, PLACE_KINDS, usePlaces, type PlaceKind } from "@/lib/places";
 import { SECTION_LABELS, useStats } from "@/lib/stats";
 import { useRoutes } from "@/lib/use-transport";
@@ -41,7 +42,13 @@ export function AdminAI() {
     setBusy(true);
     setResult(null);
     try {
-      const r = await ask({ data: { command: cmd.trim(), routes: JSON.stringify(routes).slice(0, 79000), places: JSON.stringify(places).slice(0, 29000) } });
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) {
+        toast.error("سجّلي دخولك بحساب الأدمن من فوق الأول");
+        return;
+      }
+      const r = await ask({ data: { command: cmd.trim(), routes: JSON.stringify(routes).slice(0, 79000), places: JSON.stringify(places).slice(0, 29000), token } });
       if (!r.ok) toast.error(r.reply);
       else setResult({ reply: r.reply, actions: r.actions });
     } catch {
