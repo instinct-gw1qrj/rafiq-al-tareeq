@@ -1,14 +1,56 @@
-# Welcome to your Lovable project
+# Rafiq Al Tareeq
+
+أنشئ تطبيق ويب متجاوب مع الهواتف الذكية (PWA) باللغة العربية (RTL) باسم "رفيق الطريق"، مع كتابة توقيع "تصميم دكتورة شروق محمد الباز" بوضوح في شاشة البداية وقسم الإعدادات. التطبيق مصمم ليعمل بكفاءة تامة بدون إنترنت (Offline-first باستخدام التخزين المحلي LocalStorage).
+
+​يتكون التطبيق من القائمة السفلية الرئيسية التالية:
+
+​1. قسم المواصلات والتسعيرة (دليل الطريق):
+
+​بحث تفصيلي شامل يغطي المواصلات الداخلية (مثل التوكتوك، السرفيس، الميكروباصات الداخلية) والخارجية بين المراكز والأماكن.
+
+​عرض تفاصيل الخط: نقطة الانطلاق، الوجهة، مراحل الركوب بالترتيب، مكان الموقف، والأجرة الرسمية لكل مرحلة.
+
+​إمكانية مشاركة المجتمع: زر يتيح لأي مستخدم اقتراح خط جديد أو تعديل سعر أو إضافة ملاحظة، على ألا يظهر في التطبيق رسمياً إلا بعد موافقة المسؤول عبر لوحة التحكم.
+
+​لوحة تحكم المسؤول (Admin Panel): محمية بكلمة مرور (مثلاً: 1234) تتيح لي (المسؤول) مراجعة كل اقتراحات المستخدمين والموافقة عليها أو رفضها وتعديل الأسعار.
+
+​حاسبة تكلفة الرحلة المتعددة: أداة تحسب إجمالي تكلفة المشوار لو كان يتضمن أكثر من مرحلة (مواصلة + توكتوك + سرفيس).
+
+​2. قسم "أنيس الطريق" (الروحانيات):
+
+​مكتبة أذكار كاملة (الصباح، المساء، السفر، وغيرها).
+
+​آيات من القرآن الكريم وقصص دينية قصيرة هادفة ومعبرة.
+
+​مسبحة إلكترونية متكاملة: عداد تسبيح رقمي مع عرض عبرة أو حكم دينية قصيرة مع كل دورة تسبيح.
+
+​إشعارات يومية هادئة: آيات وأدعية قصيرة تظهر للمستخدم لإبقاء التطبيق حياً.
+
+​3. القسم الطبي وإرشادات السلامة (إسعافات أولية):
+
+​إرشادات سريعة ومبسطة في ثوانٍ معدودة للتعامل مع حالات الطوارئ الطبية: (الإغماء، الحوادث، الترجيع/الغثيان، الاختناق).
+
+​4. قسم الطوارئ والاستغاثة (SOS):
+
+​زر استغاثة طارئ عاجل: زر بارز باللون الأحمر المريح، عند الضغط عليه يقوم تلقائياً بجلب الموقع الحالي للجهاز (GPS) وإرساله مع حالة الطوارئ إلى رقم الطوارئ المسجل.
+
+​أرقام الطوارئ الرسمية: قائمة جاهزة بأهم أرقام الطوارئ المصرية (الإسعاف، الشرطة، المطافئ) للاتصال المباشر بضغطة زر.
+
+​إعدادات الطوارئ: خانة لحفظ وتعديل "رقم الطوارئ الشخصي".
+
+​التصميم العام: تصميم عصري، هادئ، مريح للعين، بأيقونات واضحة تعبر عن كل قسم، وخط عربي واضح ومقروء.
 
 This project was built with [Lovable](https://lovable.dev).
 
+**Live app**: https://rafiq-al-tareeq.lovable.app
+
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/5547f57c-b322-4f9a-811d-4ba18190b222).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +62,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
