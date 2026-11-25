@@ -54,7 +54,9 @@ function TripPage() {
   const [wakeOn, setWakeOn] = useState(true);
   const [wakeHeld, setWakeHeld] = useState(false);
   const [resumed, setResumed] = useState(false);
-  const wakeSupported = wakeLockSupported();
+  // Detected after mount: reading `navigator` while rendering differs between server and phone (hydration error).
+  const [wakeSupported, setWakeSupported] = useState(true);
+  useEffect(() => { setWakeSupported(wakeLockSupported()); }, []);
   // Free-text destination: matches a known place when possible (GPS alarm keeps working),
   // otherwise keeps the typed name for the arrival message while the distance alarm stays off.
   const typed = customText.trim();
