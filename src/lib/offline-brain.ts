@@ -7,7 +7,7 @@ import { FIRST_AID } from "@/data/medical";
 import { METRO_FARES, METRO_HOURS, METRO_LINES, TRAIN_ROUTES } from "@/data/transit";
 import { normalizeArabic } from "./arabic";
 import { durationAr, governorateFor, nextPrayer, PRAYER_ORDER, prayerTimes } from "./prayer";
-import { routeTotal, VEHICLE_LABELS, type TransportRoute } from "./transport";
+import { routeHasFare, routeTotal, VEHICLE_LABELS, type TransportRoute } from "./transport";
 
 export interface LocalBrainContext {
   routes: TransportRoute[];
@@ -20,8 +20,8 @@ const has = (q: string, ...words: string[]) => words.some((w) => q.includes(norm
 /** One saved route as a readable line with stops and total fare. */
 export function routeLine(r: TransportRoute) {
   return `${r.from} ← ${r.to} | الموقف: ${r.station} | ${r.stages
-    .map((s) => `${VEHICLE_LABELS[s.vehicle]} من ${s.from} إلى ${s.to} بـ ${s.fare} جنيه${s.note ? ` (${s.note})` : ""}`)
-    .join(" ثم ")} | الإجمالي ${routeTotal(r)} جنيه${r.notes.length ? ` | ملاحظات: ${r.notes.join("، ")}` : ""}`;
+    .map((s) => `${VEHICLE_LABELS[s.vehicle]} من ${s.from} إلى ${s.to} ${s.noFare ? " (السعر غير مسجّل، اسأل السواق)" : ` بـ ${s.fare} جنيه`}${s.note ? ` (${s.note})` : ""}`)
+    .join(" ثم ")} ${routeHasFare(r) ? ` | الإجمالي ${routeTotal(r)} جنيه` : ""}${r.notes.length ? ` | ملاحظات: ${r.notes.join("، ")}` : ""}`;
 }
 
 function emergencyAnswer(q: string): string | null {

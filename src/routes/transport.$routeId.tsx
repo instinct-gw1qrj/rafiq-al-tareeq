@@ -6,7 +6,7 @@ import { VehicleIcon } from "@/components/app/VehicleIcon";
 import { Button } from "@/components/ui/button";
 import { formatFare, toArabicDigits } from "@/lib/arabic";
 import { uid } from "@/lib/storage";
-import { routeTotal, SCOPE_LABELS, VEHICLE_LABELS } from "@/lib/transport";
+import { NO_FARE_TEXT, routeHasFare, routeTotal, SCOPE_LABELS, VEHICLE_LABELS } from "@/lib/transport";
 import { useCalc, useRoutes } from "@/lib/use-transport";
 import { ChevronRight } from "lucide-react";
 
@@ -49,7 +49,7 @@ function RouteDetail() {
       ...prev,
       legs: [
         ...prev.legs,
-        ...route.stages.map((s) => ({
+        ...route.stages.filter((s) => !s.noFare).map((s) => ({
           id: uid(),
           label: `${s.from} ← ${s.to}`,
           vehicle: s.vehicle,
@@ -57,7 +57,7 @@ function RouteDetail() {
         })),
       ],
     }));
-    toast.success("أُضيفت مراحل الخط إلى الحاسبة");
+    toast.success(routeHasFare(route) ? "أُضيفت مراحل الخط إلى الحاسبة" : "أُضيفت المراحل اللي ليها سعر مسجّل فقط");
     void navigate({ to: "/transport/calculator" });
   };
 
@@ -65,8 +65,8 @@ function RouteDetail() {
     const text = [
       `${route.from} ← ${route.to}`,
       `الموقف: ${route.station}`,
-      ...route.stages.map((s, i) => `${i + 1}. ${VEHICLE_LABELS[s.vehicle]}: ${s.from} ← ${s.to} (${s.fare} ج.م)`),
-      `الإجمالي: ${total} ج.م`,
+      ...route.stages.map((s, i) => `${i + 1}. ${VEHICLE_LABELS[s.vehicle]}: ${s.from} ← ${s.to} ${s.noFare ? ` (${NO_FARE_TEXT})` : ` (${s.fare} ج.م)`}`),
+      ...(routeHasFare(route) ? [`الإجمالي: ${total} ج.م`] : []),
       "— من تطبيق رفيق الطريق",
     ].join("\n");
     try {
@@ -110,8 +110,8 @@ function RouteDetail() {
           <MapPin className="mt-0.5 size-4 shrink-0" /> مكان الموقف: {route.station}
         </p>
         <div className="mt-4 flex items-end justify-between border-t border-primary-foreground/20 pt-3">
-          <span className="text-sm text-primary-foreground/80">إجمالي الأجرة الرسمية للفرد</span>
-          <span className="text-3xl font-bold text-gold">{formatFare(total)}</span>
+          <span className="text-sm text-primary-foreground/80">{routeHasFare(route) ? "إجمالي الأجرة الرسمية للفرد" : "الأجرة"}</span>
+          <span className={routeHasFare(route) ? "text-3xl font-bold text-gold" : "text-lg font-bold text-gold"}>{routeHasFare(route) ? formatFare(total) : NO_FARE_TEXT}</span>
         </div>
       </section>
 
@@ -128,7 +128,7 @@ function RouteDetail() {
                   <span className="inline-flex items-center gap-1.5 rounded-lg bg-road-soft px-2.5 py-1 text-sm font-semibold text-road">
                     <VehicleIcon vehicle={s.vehicle} className="size-4" /> {VEHICLE_LABELS[s.vehicle]}
                   </span>
-                  <span className="text-lg font-bold text-primary">{formatFare(s.fare)}</span>
+                  <span className="text-lg font-bold text-primary">{s.noFare ? NO_FARE_TEXT : formatFare(s.fare)}</span>
                 </div>
                 <p className="mt-2 font-semibold text-foreground">
                   {s.from} ← {s.to}

@@ -4,6 +4,7 @@ import {
   DEFAULT_CALC,
   LEGACY_SEED_IDS,
   mergeBuiltInRoutes,
+  refreshRevisedBuiltIns,
   ROUTES_KEY,
   SEED_ROUTES,
   SUGGESTIONS_KEY,
@@ -32,6 +33,7 @@ export function syncBuiltInRoutes() {
   const stored = readStore<TransportRoute[]>(ROUTES_KEY, SEED_ROUTES);
   const seen = readStore<string[]>(SEEN_KEY, LEGACY_SEED_IDS);
   const r = mergeBuiltInRoutes(stored, SEED_ROUTES, seen);
-  if (r.added) writeStore(ROUTES_KEY, r.routes);
+  const fixed = refreshRevisedBuiltIns(r.routes, SEED_ROUTES);
+  if (r.added || fixed.changed) writeStore(ROUTES_KEY, fixed.routes);
   writeStore(SEEN_KEY, r.seen);
 }
