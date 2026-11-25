@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { changeDue } from "@/lib/ads";
 import { startAlarmLoop, stopAlarmLoop, testAlarm } from "@/lib/alarm";
 import { acquireWakeLock, releaseWakeLock, wakeLockSupported } from "@/lib/wake-lock";
+import { geocode, getCached, MIN_QUERY_LENGTH, type GeoResult } from "@/lib/geocode";
 import { clearTrip, evaluatePosition, loadTrip, saveTrip, type TripEvent } from "@/lib/trip-state";
 import { batteryWarning } from "@/lib/battery";
 import { formatFare, normalizeArabic, toArabicDigits } from "@/lib/arabic";
@@ -64,7 +65,30 @@ function TripPage() {
         return a.includes(b) || b.includes(a);
       })
     : undefined;
-  const typedDest: Place | null = typed ? (matchedPlace ?? { name: typed, lat: Number.NaN, lng: Number.NaN, kind: "landmark" }) : null;
+  // Not a known place: look it up on OpenStreetMap so the distance alarm works for any typed place.
+  const needsLookup = !!typed && !matchedPlace && typed.length >= MIN_QUERY_LENGTH;
+  const [geo, setGeo] = useState<{ status: "idle" | "loading" | "ok" | "none" | "error"; results: GeoResult[] }>({ status: "idle", results: [] });
+  const [pick, setPick] = useState(0);
+  useEffect(() => {
+    setPick(0);
+    if (!needsLookup) { setGeo({ status: "idle", results: [] }); return; }
+    const hit = getCached(typed);
+    if (hit) { setGeo({ status: "ok", results: hit }); return; }
+    setGeo({ status: "loading", results: [] });
+    const ctl = new AbortController();
+    // Debounce: Nominatim allows 1 request/second and forbids per-keystroke lookups.
+    const t = setTimeout(() => {
+      void geocode(typed, { signal: ctl.signal }).then((r) => {
+        if (ctl.signal.aborted) return;
+        setGeo(r.status === "ok" ? { status: "ok", results: r.results } : { status: r.status, results: [] });
+      });
+    }, 1000);
+    return () => { clearTimeout(t); ctl.abort(); };
+  }, [typed, needsLookup]);
+  const resolved = geo.status === "ok" ? geo.results[pick] ?? geo.results[0] : undefined;
+  const typedDest: Place | null = typed
+    ? (matchedPlace ?? (resolved ? { name: typed, lat: resolved.lat, lng: resolved.lng, kind: "landmark" } : { name: typed, lat: Number.NaN, lng: Number.NaN, kind: "landmark" }))
+    : null;
   const dest = custom ?? typedDest ?? PLACES.find((p) => p.name === destName) ?? PLACES[0]!;
   const destHasCoords = Number.isFinite(dest.lat) && Number.isFinite(dest.lng);
 
@@ -222,18 +246,32 @@ function TripPage() {
           />
         </Field>
         {typed && (
-          <p className="text-xs text-muted-foreground">
-            {matchedPlace
-              ? `هننبهك بالمسافة لأقرب نقطة معروفة: ${matchedPlace.name} ✅`
-              : "وجهة جديدة علينا: التنبيه بالمسافة مش متاح ليها، بس رادار المعالم ورسالة الاطمئنان شغالين."}
-          </p>
+          <div className="space-y-2 text-xs text-muted-foreground">
+            {matchedPlace && <p>{`هننبهك بالمسافة لأقرب نقطة معروفة: ${matchedPlace.name} ✅`}</p>}
+            {!matchedPlace && !needsLookup && <p>اكتب ٣ حروف على الأقل عشان نلاقي المكان.</p>}
+            {needsLookup && geo.status === "loading" && <p>بندوّر على «{typed}» على الخريطة…</p>}
+            {needsLookup && geo.status === "ok" && (
+              <div className="space-y-1.5 rounded-2xl bg-road-soft p-3 text-foreground">
+                <p className="font-bold text-road">لقينا المكان ✅ اتأكد إنه ده اللي تقصده:</p>
+                {geo.results.map((r, i) => (
+                  <label key={`${r.lat},${r.lng}`} className="flex cursor-pointer items-start gap-2">
+                    <input type="radio" name="geo-pick" checked={i === pick} onChange={() => setPick(i)} disabled={watching} className="mt-1" />
+                    <span>{r.name}</span>
+                  </label>
+                ))}
+                <p className="text-muted-foreground">لو مش ده المكان، اختار غيره أو اكتب الاسم بشكل أوضح (مثلاً زوّد اسم المدينة).</p>
+              </div>
+            )}
+            {needsLookup && geo.status === "none" && <p>مالقيناش «{typed}» على الخريطة. جرّب كتابة أوضح (مع اسم المدينة) أو اختار من القايمة.</p>}
+            {needsLookup && geo.status === "error" && <p className="font-bold text-sos">مقدرناش نبحث عن المكان لأن مفيش اتصال بالإنترنت دلوقتي. اختار أقرب مكان من القايمة، أو جرّب تاني لما النت يرجع.</p>}
+          </div>
         )}
         <Button variant="outline" size="sm" onClick={saveHere} disabled={watching}><MapPin /> احفظ مكاني الحالي كوجهة للرجوع</Button>
         <Button variant="outline" size="sm" onClick={testAlarm}><Volume2 /> جرّب نغمة المنبه القوية</Button>
         {watching ? (
           <Button onClick={() => stop()} variant="destructive" className="h-12 w-full"><Square /> إيقاف المتابعة</Button>
         ) : (
-          <Button onClick={start} className="h-12 w-full"><Navigation /> ابدأ المتابعة</Button>
+          <Button onClick={start} disabled={needsLookup && geo.status === "loading"} className="h-12 w-full"><Navigation /> ابدأ المتابعة</Button>
         )}
         {km != null && (
           <p className="rounded-2xl bg-road-soft p-3 text-center font-bold text-road">
