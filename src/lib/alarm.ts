@@ -63,3 +63,22 @@ export function playAlarm(seconds = 4): void {
 export function testAlarm(): void {
   playAlarm(1.5);
 }
+
+let loop: ReturnType<typeof setInterval> | null = null;
+
+/** Repeats the siren + vibration every few seconds until stopAlarmLoop() is called (the full-screen alarm's "stop" button). */
+export function startAlarmLoop(): void {
+  if (loop != null) return;
+  playAlarm(4);
+  loop = setInterval(() => playAlarm(4), 6000);
+}
+
+export function stopAlarmLoop(): void {
+  if (loop != null) clearInterval(loop);
+  loop = null;
+  if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.(0);
+}
+
+export function alarmLooping(): boolean {
+  return loop != null;
+}

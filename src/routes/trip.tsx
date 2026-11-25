@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BellRing, Coins, HeartHandshake, MapPin, Navigation, Radar, Square, Volume2 } from "lucide-react";
+import { BellRing, AlertTriangle, ScreenShare, Coins, HeartHandshake, MapPin, Navigation, Radar, Square, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AdSlot } from "@/components/app/AdSlot";
@@ -8,10 +8,12 @@ import { PageHeader } from "@/components/app/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { changeDue } from "@/lib/ads";
-import { playAlarm, testAlarm } from "@/lib/alarm";
+import { startAlarmLoop, stopAlarmLoop, testAlarm } from "@/lib/alarm";
+import { acquireWakeLock, releaseWakeLock, wakeLockSupported } from "@/lib/wake-lock";
+import { clearTrip, evaluatePosition, loadTrip, saveTrip, type TripEvent } from "@/lib/trip-state";
 import { batteryWarning } from "@/lib/battery";
 import { formatFare, normalizeArabic, toArabicDigits } from "@/lib/arabic";
-import { alertStage, distanceKm, PLACES, type Place } from "@/lib/geo";
+import { PLACES, type Place } from "@/lib/geo";
 import { pageHead } from "@/lib/seo";
 import { useSettings } from "@/lib/settings";
 import { getCurrentCoords, mapsLink, smsLink, whatsappLink } from "@/lib/sos";
@@ -21,12 +23,17 @@ export const Route = createFileRoute("/trip")({
   component: TripPage,
 });
 
-function notify(title: string, body: string, loud = false) {
+async function notify(title: string, body: string, loud = false) {
   toast(title, { description: body, duration: 8000 });
-  if (loud) playAlarm();
-  if ("vibrate" in navigator) navigator.vibrate?.([300, 150, 300]);
+  if ("vibrate" in navigator) navigator.vibrate?.(loud ? [600, 200, 600, 200, 900] : [300, 150, 300]);
   if ("Notification" in window && Notification.permission === "granted") {
-    try { new Notification(title, { body, icon: "/icons/icon-192.png" }); } catch { /* ignore */ }
+    const opts = { body, icon: "/icons/icon-192.png", tag: "rafiq-trip", requireInteraction: loud, vibrate: [600, 200, 600] } as NotificationOptions;
+    try {
+      // A service-worker notification can show even when the page is in the background (Android).
+      const reg = "serviceWorker" in navigator ? await navigator.serviceWorker.getRegistration() : undefined;
+      if (reg) await reg.showNotification(title, opts);
+      else new Notification(title, opts);
+    } catch { try { new Notification(title, { body }); } catch { /* ignore */ } }
   }
 }
 
@@ -40,6 +47,13 @@ function TripPage() {
   const [nearby, setNearby] = useState<string[]>([]);
   const watchId = useRef<number | null>(null);
   const fired = useRef<Set<string>>(new Set());
+  const trip = useRef<{ dest: Place; startedAt: number } | null>(null);
+  const lastFix = useRef(0);
+  const [alarm, setAlarm] = useState<TripEvent | null>(null);
+  const [wakeOn, setWakeOn] = useState(true);
+  const [wakeHeld, setWakeHeld] = useState(false);
+  const [resumed, setResumed] = useState(false);
+  const wakeSupported = wakeLockSupported();
   // Free-text destination: matches a known place when possible (GPS alarm keeps working),
   // otherwise keeps the typed name for the arrival message while the distance alarm stays off.
   const typed = customText.trim();
@@ -54,11 +68,50 @@ function TripPage() {
   const dest = custom ?? typedDest ?? PLACES.find((p) => p.name === destName) ?? PLACES[0]!;
   const destHasCoords = Number.isFinite(dest.lat) && Number.isFinite(dest.lng);
 
-  const stop = () => {
-    if (watchId.current != null) navigator.geolocation.clearWatch(watchId.current);
-    watchId.current = null; setWatching(false);
+  const persist = (wake = wakeOn) => {
+    if (trip.current) saveTrip({ dest: trip.current.dest, startedAt: trip.current.startedAt, fired: [...fired.current], wakeLock: wake });
   };
-  useEffect(() => stop, []);
+
+  const handleFix = (here: { lat: number; lng: number }) => {
+    const t = trip.current;
+    if (!t) return;
+    lastFix.current = Date.now();
+    const r = evaluatePosition(here, t.dest, fired.current, PLACES, toArabicDigits);
+    if (r.km != null) setKm(r.km);
+    setNearby(r.nearby);
+    for (const ev of r.events) {
+      fired.current.add(ev.key);
+      if (ev.kind === "arrived") fired.current.add("near");
+      void notify(ev.title, ev.body, ev.loud);
+      if (ev.loud) { setAlarm(ev); startAlarmLoop(); }
+    }
+    if (r.events.length) persist();
+  };
+
+  const stop = (forget = true) => {
+    if (watchId.current != null) navigator.geolocation?.clearWatch(watchId.current);
+    watchId.current = null; setWatching(false);
+    void releaseWakeLock(); setWakeHeld(false);
+    if (forget) { clearTrip(); trip.current = null; }
+  };
+  // Leaving the page keeps the saved trip (so it resumes); only the live watcher is released.
+  useEffect(() => () => { stop(false); stopAlarmLoop(); }, []);
+
+  const begin = (d: Place, startedAt: number, wake: boolean) => {
+    trip.current = { dest: d, startedAt };
+    lastFix.current = Date.now();
+    setWatching(true);
+    persist(wake);
+    if (wake) void acquireWakeLock().then(setWakeHeld);
+    watchId.current = navigator.geolocation.watchPosition(
+      (pos) => handleFix({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      (err) => {
+        if (err.code === 1) { toast.error("فعّل خدمة الموقع (GPS) للمتابعة"); stop(); }
+        else toast.warning("إشارة الموقع ضعيفة حالياً، هنكمل المحاولة", { duration: 5000 });
+      },
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 60000 },
+    );
+  };
 
   const start = async () => {
     if (!navigator.geolocation) { toast.error("الجهاز لا يدعم تحديد الموقع"); return; }
@@ -70,27 +123,54 @@ function TripPage() {
     if (!destHasCoords) {
       toast("«" + dest.name + "» مش على الخريطة عندنا، فالتنبيه بالمسافة مش هيعرف يقيسها. رادار المعالم ورسالة «وصلت بالسلامة» شغالين عادي، وتقدر تختار أقرب مكان معروف من القايمة لو عايز المنبه.", { duration: 9000 });
     }
+    if (!wakeSupported) toast.warning("المتصفح ده مش بيدعم إبقاء الشاشة مفتوحة، فلازم تسيب الشاشة مفتوحة بنفسك عشان المنبه يشتغل.", { duration: 9000 });
     fired.current = new Set();
-    setWatching(true);
-    watchId.current = navigator.geolocation.watchPosition(
-      (pos) => {
-        const here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        if (destHasCoords) {
-          const d = distanceKm(here, dest);
-          setKm(d);
-          const stage = alertStage(d);
-          if (stage !== "far" && !fired.current.has(stage)) {
-            fired.current.add(stage);
-            notify(stage === "near" ? "قربت توصل 🚏" : "وصلت وجهتك ✅", stage === "near" ? `باقي حوالي ${toArabicDigits(d.toFixed(1))} كم على ${dest.name}، استعد للنزول` : `أنت الآن عند ${dest.name}`, true);
-          }
-        }
-        const close = PLACES.filter((p) => p.name !== dest.name && distanceKm(here, p) < 5).map((p) => p.name);
-        setNearby(close);
-        close.forEach((n) => { if (!fired.current.has(n)) { fired.current.add(n); notify("أنت بجوار", n); } });
-      },
-      () => { toast.error("فعّل خدمة الموقع (GPS) للمتابعة"); stop(); },
-      { enableHighAccuracy: true, maximumAge: 10000 },
-    );
+    setResumed(false);
+    begin(dest, Date.now(), wakeOn);
+  };
+
+  // Reopen the app: pick the saved trip up again instead of silently forgetting it.
+  useEffect(() => {
+    const saved = loadTrip();
+    if (!saved || !navigator.geolocation) return;
+    fired.current = new Set(saved.fired);
+    setCustom(saved.dest);
+    setWakeOn(saved.wakeLock);
+    setResumed(true);
+    begin(saved.dest, saved.startedAt, saved.wakeLock);
+    navigator.geolocation.getCurrentPosition((p) => handleFix({ lat: p.coords.latitude, lng: p.coords.longitude }), () => {}, { enableHighAccuracy: true, timeout: 20000 });
+    toast("كملنا متابعة رحلتك لـ " + saved.dest.name, { duration: 6000 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Coming back to the screen: the browser pauses GPS and drops the wake lock while hidden.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState !== "visible" || !trip.current) return;
+      if (wakeOn) void acquireWakeLock().then(setWakeHeld);
+      const gap = Date.now() - lastFix.current;
+      if (gap > 90_000) toast.warning("المتابعة كانت واقفة حوالي " + toArabicDigits(String(Math.round(gap / 60000))) + " دقيقة لأن الشاشة كانت مقفولة. بنفحص مكانك دلوقتي.", { duration: 9000 });
+      navigator.geolocation?.getCurrentPosition((p) => handleFix({ lat: p.coords.latitude, lng: p.coords.longitude }), () => {}, { enableHighAccuracy: true, timeout: 20000 });
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wakeOn]);
+
+  const toggleWake = async () => {
+    const next = !wakeOn;
+    setWakeOn(next);
+    if (watching) {
+      persist(next);
+      if (next) setWakeHeld(await acquireWakeLock()); else { await releaseWakeLock(); setWakeHeld(false); }
+    }
+  };
+
+  const dismissAlarm = () => {
+    stopAlarmLoop();
+    const was = alarm;
+    setAlarm(null);
+    if (was?.kind === "arrived") stop();
   };
 
   const saveHere = async () => {
@@ -114,6 +194,14 @@ function TripPage() {
 
   return (
     <div className="space-y-5">
+      {alarm && (
+        <div role="alertdialog" aria-live="assertive" className="fixed inset-0 z-[100] flex animate-pulse flex-col items-center justify-center gap-6 bg-sos p-6 text-center text-white">
+          <BellRing className="size-24" />
+          <h2 className="text-4xl font-extrabold">{alarm.title}</h2>
+          <p className="text-xl font-bold">{alarm.body}</p>
+          <Button onClick={dismissAlarm} className="h-16 w-full max-w-sm bg-white text-xl font-extrabold text-sos hover:bg-white/90">إيقاف المنبه</Button>
+        </div>
+      )}
       <PageHeader title="رحلتي" subtitle="منبه الوجهة وأمان المشوار" icon={Navigation} tone="road" />
 
       <section className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-soft">
@@ -143,7 +231,7 @@ function TripPage() {
         <Button variant="outline" size="sm" onClick={saveHere} disabled={watching}><MapPin /> احفظ مكاني الحالي كوجهة للرجوع</Button>
         <Button variant="outline" size="sm" onClick={testAlarm}><Volume2 /> جرّب نغمة المنبه القوية</Button>
         {watching ? (
-          <Button onClick={stop} variant="destructive" className="h-12 w-full"><Square /> إيقاف المتابعة</Button>
+          <Button onClick={() => stop()} variant="destructive" className="h-12 w-full"><Square /> إيقاف المتابعة</Button>
         ) : (
           <Button onClick={start} className="h-12 w-full"><Navigation /> ابدأ المتابعة</Button>
         )}
@@ -152,7 +240,19 @@ function TripPage() {
             المسافة المتبقية: {toArabicDigits(km.toFixed(1))} كم
           </p>
         )}
-        <p className="text-xs text-muted-foreground">هننبهك قبل الوصول بـ ٣ كم وعند الوصول. خلي الشاشة مفتوحة أثناء الرحلة.</p>
+        <p className="text-xs text-muted-foreground">هننبهك قبل الوصول بـ ٣ كم وعند الوصول.</p>
+        {resumed && watching && <p className="rounded-2xl bg-road-soft p-3 text-xs font-bold text-road">كملنا متابعة رحلتك المحفوظة لـ {dest.name}. المتابعة مش بتتلغي لو قفلت التطبيق وفتحته تاني.</p>}
+        <button type="button" onClick={() => void toggleWake()} className="flex w-full items-center justify-between rounded-2xl border border-border p-3 text-sm">
+          <span className="flex items-center gap-2 font-bold"><ScreenShare className="size-4" /> إبقاء الشاشة مفتوحة أثناء الرحلة</span>
+          <span className={wakeOn ? "font-bold text-success" : "text-muted-foreground"}>{wakeOn ? (watching ? (wakeHeld ? "شغّال ✅" : "جاري التفعيل…") : "مفعّل") : "مقفول"}</span>
+        </button>
+        <div className="flex gap-2 rounded-2xl bg-gold/10 p-3 text-xs leading-relaxed text-foreground">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-gold" />
+          <p>
+            تنبيه مهم: التطبيق ده بيشتغل من المتصفح، والمتصفح بيوقف تحديد الموقع لما الشاشة تتقفل أو تفتح تطبيق تاني. عشان المنبه يرن: سيب التطبيق مفتوح على الشاشة دي، وخلي «إبقاء الشاشة مفتوحة» شغّال، واسمح بالإشعارات والموقع، وارفع الصوت. لو قفلت الشاشة، التتبع ممكن يقف لحد ما تفتحها تاني (هنكمله ونفحص مكانك فوراً).
+            {!wakeSupported && " المتصفح ده مش بيدعم إبقاء الشاشة مفتوحة، فخلي الشاشة شغالة بنفسك."}
+          </p>
+        </div>
       </section>
 
       <section className="space-y-2 rounded-3xl border border-border bg-card p-5 shadow-soft">
