@@ -58,13 +58,12 @@ function TripPage() {
   // Free-text destination: matches a known place when possible (GPS alarm keeps working),
   // otherwise keeps the typed name for the arrival message while the distance alarm stays off.
   const typed = customText.trim();
-  const matchedPlace = typed
-    ? PLACES.find((p) => {
-        const a = normalizeArabic(p.name);
-        const b = normalizeArabic(typed);
-        return a.includes(b) || b.includes(a);
-      })
-    : undefined;
+  // matchedPlace: what she typed is (part of) a known place name, so no lookup is needed.
+  // containedPlace: she typed MORE than a known name (e.g. "جامعة الزقازيق كلية الهندسة"): look it up
+  // precisely on the map, and only fall back to the known place if the lookup fails.
+  const nTyped = normalizeArabic(typed);
+  const matchedPlace = typed.length >= MIN_QUERY_LENGTH ? PLACES.find((p) => normalizeArabic(p.name).includes(nTyped)) : undefined;
+  const containedPlace = typed.length >= MIN_QUERY_LENGTH && !matchedPlace ? PLACES.find((p) => nTyped.includes(normalizeArabic(p.name))) : undefined;
   // Not a known place: look it up on OpenStreetMap so the distance alarm works for any typed place.
   const needsLookup = !!typed && !matchedPlace && typed.length >= MIN_QUERY_LENGTH;
   const [geo, setGeo] = useState<{ status: "idle" | "loading" | "ok" | "none" | "error"; results: GeoResult[] }>({ status: "idle", results: [] });
@@ -86,8 +85,9 @@ function TripPage() {
     return () => { clearTimeout(t); ctl.abort(); };
   }, [typed, needsLookup]);
   const resolved = geo.status === "ok" ? geo.results[pick] ?? geo.results[0] : undefined;
+  const lookupFailed = geo.status === "error" || geo.status === "none";
   const typedDest: Place | null = typed
-    ? (matchedPlace ?? (resolved ? { name: typed, lat: resolved.lat, lng: resolved.lng, kind: "landmark" } : { name: typed, lat: Number.NaN, lng: Number.NaN, kind: "landmark" }))
+    ? (matchedPlace ?? (resolved ? { name: typed, lat: resolved.lat, lng: resolved.lng, kind: "landmark" } : lookupFailed && containedPlace ? { ...containedPlace, name: typed } : { name: typed, lat: Number.NaN, lng: Number.NaN, kind: "landmark" }))
     : null;
   const dest = custom ?? typedDest ?? PLACES.find((p) => p.name === destName) ?? PLACES[0]!;
   const destHasCoords = Number.isFinite(dest.lat) && Number.isFinite(dest.lng);
@@ -262,6 +262,7 @@ function TripPage() {
                 <p className="text-muted-foreground">لو مش ده المكان، اختار غيره أو اكتب الاسم بشكل أوضح (مثلاً زوّد اسم المدينة).</p>
               </div>
             )}
+            {needsLookup && lookupFailed && containedPlace && <p className="font-bold text-road">{`هننبهك بالمسافة لأقرب نقطة معروفة: ${containedPlace.name} ✅`}</p>}
             {needsLookup && geo.status === "none" && <p>مالقيناش «{typed}» على الخريطة. جرّب كتابة أوضح (مع اسم المدينة) أو اختار من القايمة.</p>}
             {needsLookup && geo.status === "error" && <p className="font-bold text-sos">مقدرناش نبحث عن المكان لأن مفيش اتصال بالإنترنت دلوقتي. اختار أقرب مكان من القايمة، أو جرّب تاني لما النت يرجع.</p>}
           </div>
