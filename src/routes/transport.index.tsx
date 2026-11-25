@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BusFront, Calculator, ChevronLeft, MapPin, MessageSquarePlus, Search, Users } from "lucide-react";
+import { BadgeCheck, BusFront, Calculator, ChevronLeft, MapPin, MessageSquarePlus, Search, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Chip } from "@/components/app/Chip";
 import { PageHeader } from "@/components/app/PageHeader";
@@ -97,6 +97,11 @@ function TransportPage() {
                 <span className="rounded-full bg-road-soft px-2.5 py-0.5 text-xs font-medium text-road">
                   {SCOPE_LABELS[r.scope]}
                 </span>
+                {r.source === "documented" && (
+                  <span className="inline-flex items-center gap-1 text-xs text-primary">
+                    <BadgeCheck className="size-3.5" /> موثّق
+                  </span>
+                )}
                 {r.source === "community" && (
                   <span className="inline-flex items-center gap-1 text-xs text-anis">
                     <Users className="size-3.5" /> من المجتمع

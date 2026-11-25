@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Calculator, Info, MapPin, MessageSquarePlus, PencilLine, Share2, Users } from "lucide-react";
+import { BadgeCheck, Calculator, Info, MapPin, MessageSquarePlus, PencilLine, Share2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { FavoriteButton } from "@/components/app/FavoriteButton";
 import { VehicleIcon } from "@/components/app/VehicleIcon";
@@ -89,6 +89,11 @@ function RouteDetail() {
       <section className="bg-hero animate-rise rounded-3xl p-5 text-primary-foreground shadow-soft">
         <div className="mb-2 flex items-center gap-2 text-xs">
           <span className="rounded-full bg-primary-foreground/15 px-2.5 py-0.5">{SCOPE_LABELS[route.scope]}</span>
+          {route.source === "documented" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2.5 py-0.5">
+              <BadgeCheck className="size-3" /> موثّق من مصدر منشور
+            </span>
+          )}
           {route.source === "community" && (
             <span className="inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2.5 py-0.5">
               <Users className="size-3" /> من المجتمع
