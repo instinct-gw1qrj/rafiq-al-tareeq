@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { formatFare, toArabicDigits } from "@/lib/arabic";
 import { pageHead } from "@/lib/seo";
 import {
+  NO_FARE_TEXT,
+  routeHasFare,
   routeTotal,
   routeVehicles,
   SCOPE_LABELS,
@@ -118,7 +120,7 @@ function TransportPage() {
                   </p>
                 </div>
                 <div className="shrink-0 text-left">
-                  <p className="text-lg font-bold text-primary">{formatFare(routeTotal(r))}</p>
+                  <p className="text-lg font-bold text-primary">{routeHasFare(r) ? formatFare(routeTotal(r)) : NO_FARE_TEXT}</p>
                   <p className="text-[11px] text-muted-foreground">{toArabicDigits(r.stages.length)} مرحلة</p>
                 </div>
               </div>
